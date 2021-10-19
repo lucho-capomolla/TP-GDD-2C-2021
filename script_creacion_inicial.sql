@@ -51,10 +51,6 @@ IF OBJECT_ID('UTNIX.Paquete', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Paquete
 GO
 
-IF OBJECT_ID('UTNIX.Paquete_x_Viaje', 'U') IS NOT NULL
-	DROP TABLE UTNIX.Paquete_x_Viaje
-GO
-
 IF OBJECT_ID('UTNIX.Estado', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Estado
 GO
@@ -93,6 +89,32 @@ GO
 
 
 /*---------------------------------------------------------------------------------------------------------------------------
+											BORRADO DE FUNCIONES
+---------------------------------------------------------------------------------------------------------------------------*/
+
+IF OBJECT_ID('UTNIX.Obtener_Tipo_Tarea') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_Tipo_Tarea
+
+
+/*---------------------------------------------------------------------------------------------------------------------------
+											BORRADO DE PROCEDURES
+---------------------------------------------------------------------------------------------------------------------------*/
+
+IF OBJECT_ID('UTNIX.Migrar_Material') IS NOT NULL
+	DROP PROCEDURE UTNIX.Migrar_Material
+GO
+
+IF OBJECT_ID('UTNIX.Migrar_Tipo_Tarea') IS NOT NULL
+	DROP PROCEDURE UTNIX.Migrar_Tipo_Tarea
+GO
+
+IF OBJECT_ID('UTNIX.Migrar_Tarea') IS NOT NULL
+	DROP PROCEDURE UTNIX.Migrar_Tarea
+GO
+
+
+
+/*---------------------------------------------------------------------------------------------------------------------------
 											CREACION DE ESQUEMA
 ---------------------------------------------------------------------------------------------------------------------------*/
 
@@ -120,7 +142,7 @@ CREATE TABLE UTNIX.Recorrido (
 GO
 
 CREATE TABLE UTNIX.Chofer (
-		chofer_numero_legajo DECIMAL(18,0) PRIMARY KEY IDENTITY(1,1),
+		chofer_numero_legajo DECIMAL(18,0) PRIMARY KEY,
 		chofer_nombre NVARCHAR(255) NOT NULL,
 		chofer_apellido NVARCHAR(255) NOT NULL,
 		chofer_dni DECIMAL(18,0) NOT NULL,
@@ -182,15 +204,9 @@ GO
 
 CREATE TABLE UTNIX.Paquete (
 		paquete_codigo DECIMAL(18,0) PRIMARY KEY IDENTITY(1,1),
-		paquete_tipo_codigo DECIMAL(18,0) REFERENCES UTNIX.Tipo_Paquete(tipo_paquete_codigo) NOT NULL
-);
-GO
-
-CREATE TABLE UTNIX.Paquete_x_Viaje (
-		paquete_x_viaje_codigo DECIMAL(18,0) PRIMARY KEY IDENTITY(1,1),
-		paquete_codigo DECIMAL(18,0) REFERENCES UTNIX.Paquete(paquete_codigo) NOT NULL,
-		viaje_codigo DECIMAL(18,0) REFERENCES UTNIX.Viaje(viaje_codigo) NOT NULL,
-		cantidad DECIMAL(18,0) NOT NULL	
+		paquete_tipo_codigo DECIMAL(18,0) REFERENCES UTNIX.Tipo_Paquete(tipo_paquete_codigo) NOT NULL,
+		paquete_viaje_codigo DECIMAL(18,0) REFERENCES UTNIX.Viaje(viaje_codigo) NOT NULL,
+		paquete_cantidad DECIMAL(18,0) NOT NULL	
 );
 GO
 
@@ -220,7 +236,7 @@ CREATE TABLE UTNIX.Orden_Trabajo (
 GO
 
 CREATE TABLE UTNIX.Mecanico (
-		mecanico_legajo_numero DECIMAL(18,0) PRIMARY KEY IDENTITY(1,1),
+		mecanico_legajo_numero DECIMAL(18,0) PRIMARY KEY,
 		mecanico_nombre NVARCHAR(255) NOT NULL,
 		mecanico_apellido NVARCHAR(255) NOT NULL,
 		mecanico_dni DECIMAL(18,0) NOT NULL,
@@ -239,7 +255,7 @@ CREATE TABLE UTNIX.Tipo_Tarea (
 GO
 
 CREATE TABLE UTNIX.Tarea (
-		tarea_codigo DECIMAL(18,0) PRIMARY KEY IDENTITY(1,1),
+		tarea_codigo DECIMAL(18,0) PRIMARY KEY,
 		tarea_descripcion NVARCHAR(255) NOT NULL,
 		tarea_tipo_codigo DECIMAL(18,0) REFERENCES UTNIX.Tipo_Tarea(tipo_tarea_codigo) NOT NULL,
 		tarea_tiempo_estimado DECIMAL(18,0) NOT NULL
@@ -271,3 +287,87 @@ CREATE TABLE UTNIX.Material_x_Tarea (
 		material_codigo NVARCHAR(100) REFERENCES UTNIX.Material(material_codigo) NOT NULL
 );
 GO
+
+
+/*---------------------------------------------------------------------------------------------------------------------------
+											CREACION DE FUNCIONES
+---------------------------------------------------------------------------------------------------------------------------*/
+
+CREATE FUNCTION UTNIX.Obtener_Tipo_Tarea (@TIPO_TAREA_DESCRIPCION NVARCHAR(255))
+RETURNS DECIMAL(18,0)
+AS
+BEGIN
+	DECLARE @TIPO_TAREA_CODIGO DECIMAL(18,0)
+
+	SELECT @TIPO_TAREA_CODIGO = tipo_tarea_codigo FROM UTNIX.Tipo_Tarea
+	WHERE tipo_tarea_descripcion = @TIPO_TAREA_DESCRIPCION
+
+	RETURN @TIPO_TAREA_CODIGO
+END
+GO
+
+
+
+/*---------------------------------------------------------------------------------------------------------------------------
+											CREACION DE PROCEDURES
+---------------------------------------------------------------------------------------------------------------------------*/
+
+CREATE PROCEDURE UTNIX.Migrar_Material
+AS
+BEGIN
+
+	INSERT INTO UTNIX.Material (material_codigo, material_descripcion, material_precio)
+		SELECT DISTINCT MATERIAL_COD, MATERIAL_DESCRIPCION, MATERIAL_PRECIO FROM gd_esquema.Maestra
+		WHERE MATERIAL_COD IS NOT NULL
+END
+GO
+-- Es para probar que se migraron los datos a la tabla
+SELECT * FROM UTNIX.Material
+GO
+
+
+
+CREATE PROCEDURE UTNIX.Migrar_Tipo_Tarea 
+AS
+BEGIN
+	INSERT INTO UTNIX.Tipo_Tarea (tipo_tarea_descripcion)
+		SELECT DISTINCT TIPO_TAREA FROM gd_esquema.Maestra
+		WHERE TIPO_TAREA IS NOT NULL
+END
+GO
+-- Es para probar que se migraron los datos a la tabla
+SELECT * FROM UTNIX.Tipo_Tarea
+GO
+
+
+
+CREATE PROCEDURE UTNIX.Migrar_Tarea
+AS
+BEGIN
+	INSERT INTO UTNIX.Tarea (tarea_codigo, tarea_descripcion, tarea_tipo_codigo, tarea_tiempo_estimado)
+		SELECT DISTINCT TAREA_CODIGO, TAREA_DESCRIPCION, UTNIX.Obtener_Tipo_Tarea(TIPO_TAREA), TAREA_TIEMPO_ESTIMADO FROM gd_esquema.Maestra
+		WHERE TAREA_CODIGO IS NOT NULL
+END
+GO
+-- Es para probar que se migraron los datos a la tabla
+SELECT * FROM UTNIX.Tarea
+GO
+
+
+
+
+-- No darle bola, son datos auxiliares para crear los Procedimientos
+SELECT * FROM gd_esquema.Maestra
+
+SELECT DISTINCT TAREA_CODIGO, TAREA_DESCRIPCION, TAREA_TIEMPO_ESTIMADO, TIPO_TAREA FROM gd_esquema.Maestra
+WHERE TAREA_CODIGO IS NOT NULL
+
+
+
+/*---------------------------------------------------------------------------------------------------------------------------
+									EJECUCIÓN DE LOS PROCEDURES PARA MIGRAR LOS DATOS
+---------------------------------------------------------------------------------------------------------------------------*/
+
+EXEC UTNIX.Migrar_Material
+EXEC UTNIX.Migrar_Tipo_Tarea
+EXEC UTNIX.Migrar_Tarea
