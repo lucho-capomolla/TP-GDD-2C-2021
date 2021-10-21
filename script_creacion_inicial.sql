@@ -1,14 +1,4 @@
 USE GD2C2021
-GO
-
-
-/*---------------------------------------------------------------------------------------------------------------------------
-											BORRADO DE ESQUEMA
----------------------------------------------------------------------------------------------------------------------------*/
-
-IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'UTNIX')
-  DROP SCHEMA UTNIX
-GO
 
 
 /*---------------------------------------------------------------------------------------------------------------------------
@@ -17,75 +7,57 @@ GO
 
 IF OBJECT_ID('UTNIX.Material_x_Tarea', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Material_x_Tarea
-GO
 
 IF OBJECT_ID('UTNIX.Material', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Material
-GO
 
 IF OBJECT_ID('UTNIX.Tarea_a_Realizar', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Tarea_a_Realizar
-GO
 
 IF OBJECT_ID('UTNIX.Tarea', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Tarea
-GO
 
 IF OBJECT_ID('UTNIX.Tipo_Tarea', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Tipo_Tarea
-GO
 
 IF OBJECT_ID('UTNIX.Mecanico', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Mecanico
-GO
 
 IF OBJECT_ID('UTNIX.Orden_Trabajo', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Orden_Trabajo
-GO
 
 IF OBJECT_ID('UTNIX.Taller', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Taller
-GO
 
 IF OBJECT_ID('UTNIX.Estado', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Estado
-GO
 
 IF OBJECT_ID('UTNIX.Paquete', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Paquete
-GO
 
 IF OBJECT_ID('UTNIX.Tipo_Paquete', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Tipo_Paquete
-GO
 
 IF OBJECT_ID('UTNIX.Viaje', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Viaje
-GO
 
 IF OBJECT_ID('UTNIX.Camion', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Camion
-GO
 
 IF OBJECT_ID('UTNIX.Marca', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Marca
-GO
 
 IF OBJECT_ID('UTNIX.Modelo', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Modelo
-GO
 
 IF OBJECT_ID('UTNIX.Chofer', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Chofer
-GO
 
 IF OBJECT_ID('UTNIX.Recorrido', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Recorrido
-GO
 
 IF OBJECT_ID('UTNIX.Ciudad', 'U') IS NOT NULL
 	DROP TABLE UTNIX.Ciudad
-GO
 
 
 /*---------------------------------------------------------------------------------------------------------------------------
@@ -104,6 +76,27 @@ IF OBJECT_ID('UTNIX.Obtener_COD_Marca') IS NOT NULL
 IF OBJECT_ID('UTNIX.Obtener_COD_Modelo') IS NOT NULL
 	DROP FUNCTION UTNIX.Obtener_COD_Modelo
 	
+IF OBJECT_ID('UTNIX.Obtener_COD_Camion') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_COD_Camion
+	
+IF OBJECT_ID('UTNIX.Obtener_COD_Estado') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_COD_Estado
+	
+IF OBJECT_ID('UTNIX.Obtener_COD_Recorrido') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_COD_Recorrido
+	
+IF OBJECT_ID('UTNIX.Obtener_COD_Taller') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_COD_Taller
+	
+IF OBJECT_ID('UTNIX.Obtener_Tipo_Paquete') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_Tipo_Paquete
+
+IF OBJECT_ID('UTNIX.Obtener_COD_Viaje') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_COD_Viaje
+
+IF OBJECT_ID('UTNIX.Obtener_COD_OT') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_COD_OT
+
 
 /*---------------------------------------------------------------------------------------------------------------------------
 											BORRADO DE PROCEDURES
@@ -111,47 +104,70 @@ IF OBJECT_ID('UTNIX.Obtener_COD_Modelo') IS NOT NULL
 
 IF OBJECT_ID('UTNIX.Migrar_Material') IS NOT NULL
 	DROP PROCEDURE UTNIX.Migrar_Material
-GO
+
+IF OBJECT_ID('UTNIX.Migrar_Material_x_Tarea') IS NOT NULL
+	DROP PROCEDURE UTNIX.Migrar_Material_x_Tarea
 
 IF OBJECT_ID('UTNIX.Migrar_Tipo_Tarea') IS NOT NULL
 	DROP PROCEDURE UTNIX.Migrar_Tipo_Tarea
-GO
 
 IF OBJECT_ID('UTNIX.Migrar_Tarea') IS NOT NULL
 	DROP PROCEDURE UTNIX.Migrar_Tarea
-GO
 
 IF OBJECT_ID('UTNIX.Migrar_Tipo_Paquete') IS NOT NULL
 	DROP PROCEDURE UTNIX.Migrar_Tipo_Paquete
-GO
 
 IF OBJECT_ID('UTNIX.Migrar_Chofer') IS NOT NULL
 	DROP PROCEDURE UTNIX.Migrar_Chofer
-GO
 
 IF OBJECT_ID('UTNIX.Migrar_Modelo') IS NOT NULL
 	DROP PROCEDURE UTNIX.Migrar_Modelo
-GO
 
 IF OBJECT_ID('UTNIX.Migrar_Marca') IS NOT NULL
 	DROP PROCEDURE UTNIX.Migrar_Marca
-GO
 
 IF OBJECT_ID('UTNIX.Migrar_Mecanico') IS NOT NULL
 	DROP PROCEDURE UTNIX.Migrar_Mecanico
-GO
 
 IF OBJECT_ID('UTNIX.Migrar_Ciudad') IS NOT NULL
 	DROP PROCEDURE UTNIX.Migrar_Ciudad
-GO
 
 IF OBJECT_ID('UTNIX.Migrar_Recorrido') IS NOT NULL
 	DROP PROCEDURE UTNIX.Migrar_Recorrido
-GO
 
 IF OBJECT_ID('UTNIX.Migrar_Camion') IS NOT NULL
 	DROP PROCEDURE UTNIX.Migrar_Camion
+
+IF OBJECT_ID('UTNIX.Migrar_Orden_Trabajo') IS NOT NULL
+	DROP PROCEDURE UTNIX.Migrar_Orden_Trabajo
+	
+IF OBJECT_ID('UTNIX.Migrar_Camion') IS NOT NULL
+	DROP PROCEDURE UTNIX.Migrar_Camion
+
+IF OBJECT_ID('UTNIX.Migrar_Estado') IS NOT NULL
+	DROP PROCEDURE UTNIX.Migrar_Estado
+
+IF OBJECT_ID('UTNIX.Migrar_Paquete') IS NOT NULL
+	DROP PROCEDURE UTNIX.Migrar_Paquete
+
+IF OBJECT_ID('UTNIX.Migrar_Taller') IS NOT NULL
+	DROP PROCEDURE UTNIX.Migrar_Taller
+
+IF OBJECT_ID('UTNIX.Migrar_Viaje') IS NOT NULL
+	DROP PROCEDURE UTNIX.Migrar_Viaje
+
+IF OBJECT_ID('UTNIX.Migrar_Tarea_a_Realizar') IS NOT NULL
+	DROP PROCEDURE UTNIX.Migrar_Tarea_a_Realizar
+
+
+/*---------------------------------------------------------------------------------------------------------------------------
+											BORRADO DE ESQUEMA
+---------------------------------------------------------------------------------------------------------------------------*/
+
+IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'UTNIX')
+  DROP SCHEMA UTNIX
 GO
+
 
 
 /*---------------------------------------------------------------------------------------------------------------------------
@@ -226,8 +242,8 @@ CREATE TABLE UTNIX.Viaje (
 		viaje_chofer_legajo DECIMAL(18,0) REFERENCES UTNIX.Chofer(chofer_numero_legajo) NOT NULL,
 		viaje_recorrido_codigo DECIMAL(18,0) REFERENCES UTNIX.Recorrido(recorrido_codigo) NOT NULL,
 		viaje_fecha_inicio DATETIME2(7) NOT NULL,
-		viaje_fecha_fin DATETIME2(3) NOT NULL,
-		viaje_consumo_combustible DECIMAL(18,2) NOT NULL
+		viaje_fecha_fin DATETIME2(3) NULL,
+		viaje_consumo_combustible DECIMAL(18,2) NULL
 );
 GO
 
@@ -270,7 +286,7 @@ CREATE TABLE UTNIX.Orden_Trabajo (
 		orden_trabajo_codigo DECIMAL(18,0) PRIMARY KEY IDENTITY(1,1),
 		orden_trabajo_fecha NVARCHAR(255) NOT NULL,
 		orden_trabajo_camion_codigo DECIMAL(18,0) REFERENCES UTNIX.Camion(camion_codigo) NOT NULL,
-		orden_trabajo_estado_codigo DECIMAL(18,0) REFERENCES UTNIX.Estado(estado_codigo) NOT NULL,
+		orden_trabajo_estado_codigo DECIMAL(18,0) REFERENCES UTNIX.Estado(estado_codigo) NULL,
 		orden_trabajo_taller_codigo DECIMAL(18,0) REFERENCES UTNIX.Taller(taller_codigo) NOT NULL
 );
 GO
@@ -306,13 +322,14 @@ CREATE TABLE UTNIX.Tarea_a_Realizar (
 		tarea_a_realizar_codigo	DECIMAL(18,0) PRIMARY KEY IDENTITY(1,1),
 		tarea_a_realizar_orden_trabajo_codigo DECIMAL(18,0) REFERENCES UTNIX.Orden_Trabajo(orden_trabajo_codigo) NOT NULL,
 		tarea_a_realizar_tarea_codigo DECIMAL(18,0) REFERENCES UTNIX.Tarea(tarea_codigo) NOT NULL,
-		tarea_a_realizar_mecanico_legajo DECIMAL(18,0) REFERENCES UTNIX.Mecanico(mecanico_legajo_numero) NOT NULL,
-		tarea_a_realizar_fecha_inicio_planificado DATETIME2(3) NOT NULL,
-		tarea_a_realizar_fecha_inicio DATETIME2(3) NOT NULL,
-		tarea_a_realizar_fecha_fin DATETIME2(3) NOT NULL,
-		tarea_a_realizar_tiempo_real DECIMAL(18,0) NOT NULL
+		tarea_a_realizar_mecanico_legajo DECIMAL(18,0) REFERENCES UTNIX.Mecanico(mecanico_legajo_numero) NULL,
+		tarea_a_realizar_fecha_inicio_planificado DATETIME2(3) NULL,
+		tarea_a_realizar_fecha_inicio DATETIME2(3) NULL,
+		tarea_a_realizar_fecha_fin DATETIME2(3) NULL,
+		tarea_a_realizar_tiempo_real DECIMAL(18,0) NULL
 );
 GO
+
 
 CREATE TABLE UTNIX.Material (
 		material_codigo NVARCHAR(100) PRIMARY KEY,
@@ -333,8 +350,6 @@ GO
 											CREACION DE FUNCIONES
 ---------------------------------------------------------------------------------------------------------------------------*/
 
-CREATE FUNCTION UTNIX.Obtener_COD_Tarea ()
-
 CREATE FUNCTION UTNIX.Obtener_Tipo_Tarea (@TIPO_TAREA_DESCRIPCION NVARCHAR(255))
 RETURNS DECIMAL(18,0)
 AS
@@ -345,6 +360,19 @@ BEGIN
 	WHERE tipo_tarea_descripcion = @TIPO_TAREA_DESCRIPCION
 
 	RETURN @TIPO_TAREA_CODIGO
+END
+GO
+
+CREATE FUNCTION UTNIX.Obtener_Tipo_Paquete (@TIPO_PAQUETE NVARCHAR(255))
+RETURNS DECIMAL(18,0)
+AS
+BEGIN
+	DECLARE @CODIGO_TIPO_PAQUETE DECIMAL(18,0)
+
+	SELECT @CODIGO_TIPO_PAQUETE = tipo_paquete_codigo FROM UTNIX.Tipo_Paquete
+	WHERE @TIPO_PAQUETE = tipo_paquete_descripcion
+
+	RETURN @CODIGO_TIPO_PAQUETE
 END
 GO
 
@@ -389,6 +417,93 @@ BEGIN
 END
 GO
 
+CREATE FUNCTION UTNIX.Obtener_COD_Camion (@PATENTE NVARCHAR(255))
+RETURNS DECIMAL(18,0)
+AS
+BEGIN
+	DECLARE @CODIGO_CAMION DECIMAL(18,0)
+
+	SELECT @CODIGO_CAMION = camion_codigo FROM UTNIX.Camion
+	WHERE camion_patente = @PATENTE
+
+	RETURN @CODIGO_CAMION
+
+END
+GO
+
+CREATE FUNCTION UTNIX.Obtener_COD_Recorrido (@ORIGEN NVARCHAR(255), @DESTINO NVARCHAR(255))
+RETURNS DECIMAL(18,0)
+AS
+BEGIN
+	DECLARE @CODIGO_RECORRIDO DECIMAL(18,0)
+
+	SELECT @CODIGO_RECORRIDO = recorrido_codigo FROM UTNIX.Recorrido
+	WHERE recorrido_ciudad_origen_codigo = UTNIX.Obtener_COD_Ciudad(@ORIGEN)
+		AND recorrido_ciudad_destino_codigo = UTNIX.Obtener_COD_Ciudad(@DESTINO)
+
+	RETURN @CODIGO_RECORRIDO
+END
+GO
+
+CREATE FUNCTION UTNIX.Obtener_COD_Viaje (@PATENTE NVARCHAR(255), @CHOFER_NRO_LEGAJO DECIMAL(18,0), @CIUDAD_ORIGEN NVARCHAR(255), @CIUDAD_DESTINO NVARCHAR(255), @VIAJE_INICIO DATETIME2(7), @VIAJE_FIN DATETIME2(3))
+RETURNS DECIMAL(18,0)
+AS
+BEGIN
+	DECLARE @CODIGO_VIAJE DECIMAL(18,0)
+
+	SELECT @CODIGO_VIAJE = viaje_codigo FROM UTNIX.Viaje
+	WHERE UTNIX.Obtener_COD_Camion(@PATENTE) = viaje_camion_codigo AND
+		 @CHOFER_NRO_LEGAJO = viaje_chofer_legajo AND
+		 UTNIX.Obtener_COD_Recorrido(@CIUDAD_ORIGEN, @CIUDAD_DESTINO) = viaje_recorrido_codigo AND
+		 @VIAJE_INICIO = viaje_fecha_inicio AND
+		 @VIAJE_FIN = viaje_fecha_fin
+
+	RETURN @CODIGO_VIAJE
+END
+GO
+
+CREATE FUNCTION UTNIX.Obtener_COD_Taller (@NOMBRE_TALLER NVARCHAR(255))
+RETURNS DECIMAL(18,0)
+AS
+BEGIN
+	DECLARE @CODIGO_TALLER DECIMAL(18,0)
+
+	SELECT @CODIGO_TALLER = taller_codigo FROM UTNIX.Taller
+	WHERE taller_nombre = @NOMBRE_TALLER
+
+	RETURN @CODIGO_TALLER
+
+END
+GO
+
+CREATE FUNCTION UTNIX.Obtener_COD_Estado (@ESTADO NVARCHAR(255))
+RETURNS DECIMAL(18,0)
+AS
+BEGIN
+	DECLARE @CODIGO_ESTADO DECIMAL(18,0)
+
+	SELECT @CODIGO_ESTADO = estado_codigo FROM UTNIX.Estado
+	WHERE estado_descripcion = @ESTADO
+
+	RETURN @CODIGO_ESTADO
+
+END
+GO
+
+CREATE FUNCTION UTNIX.Obtener_COD_OT (@FECHA_OT NVARCHAR(255), @NOMBRE_TALLER NVARCHAR(255), @PATENTE NVARCHAR(255))
+RETURNS DECIMAL(18,0)
+AS
+BEGIN
+	DECLARE @CODIGO_OT DECIMAL(18,0)
+
+	SELECT @CODIGO_OT = orden_trabajo_codigo FROM UTNIX.Orden_Trabajo
+	WHERE orden_trabajo_taller_codigo = UTNIX.Obtener_COD_Taller(@NOMBRE_TALLER) AND
+		orden_trabajo_camion_codigo = UTNIX.Obtener_COD_Camion(@PATENTE)
+	
+	RETURN @CODIGO_OT
+END
+GO
+
 
 /*---------------------------------------------------------------------------------------------------------------------------
 											CREACION DE PROCEDURES
@@ -403,33 +518,19 @@ BEGIN
 		WHERE MATERIAL_COD IS NOT NULL
 END
 GO
--- Es para probar que se migraron los datos a la tabla
-SELECT * FROM UTNIX.Material
-GO
 
------------------------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------%%%%%%%%%%%%%%%%% REVISAR
+
 CREATE PROCEDURE UTNIX.Migrar_Material_x_Tarea
 AS
 BEGIN
 	INSERT INTO UTNIX.Material_x_Tarea (tarea_codigo, material_codigo)
-		SELECT TAREA_CODIGO, MATERIAL_COD FROM gd_esquema.Maestra
+		SELECT DISTINCT TAREA_CODIGO, MATERIAL_COD FROM gd_esquema.Maestra
 		WHERE TAREA_CODIGO IS NOT NULL
 		GROUP BY TAREA_CODIGO, MATERIAL_COD
 		ORDER BY 1 ASC 
 END
 GO
 
--- Para tener un ejemplo de la cantidad de Materiales para Cada tarea
-SELECT tarea_codigo, COUNT(material_codigo) AS [Cantidad de Materiales]
-FROM UTNIX.Material_x_Tarea
-GROUP BY tarea_codigo
-GO
-
-SELECT * FROM UTNIX.Material_x_Tarea
-GO
-
------------------------------------------------------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE UTNIX.Migrar_Tipo_Tarea 
 AS
@@ -439,11 +540,7 @@ BEGIN
 		WHERE TIPO_TAREA IS NOT NULL
 END
 GO
--- Es para probar que se migraron los datos a la tabla
-SELECT * FROM UTNIX.Tipo_Tarea
-GO
 
------------------------------------------------------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE UTNIX.Migrar_Tarea
 AS
@@ -453,11 +550,7 @@ BEGIN
 		WHERE TAREA_CODIGO IS NOT NULL
 END
 GO
--- Es para probar que se migraron los datos a la tabla
-SELECT * FROM UTNIX.Tarea
-GO
 
------------------------------------------------------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE UTNIX.Migrar_Tipo_Paquete
 AS
@@ -469,10 +562,16 @@ BEGIN
 END
 GO
 
-SELECT * FROM UTNIX.Tipo_Paquete
+
+CREATE PROCEDURE UTNIX.Migrar_Paquete
+AS
+BEGIN
+	INSERT INTO UTNIX.Paquete (paquete_tipo_codigo, paquete_viaje_codigo, paquete_cantidad)
+		SELECT DISTINCT UTNIX.Obtener_Tipo_Paquete(PAQUETE_DESCRIPCION), UTNIX.Obtener_COD_Viaje(CAMION_PATENTE, CHOFER_NRO_LEGAJO, RECORRIDO_CIUDAD_ORIGEN, RECORRIDO_CIUDAD_DESTINO, VIAJE_FECHA_INICIO, VIAJE_FECHA_FIN), PAQUETE_CANTIDAD FROM gd_esquema.Maestra
+		WHERE PAQUETE_DESCRIPCION IS NOT NULL
+END
 GO
 
------------------------------------------------------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE UTNIX.Migrar_Chofer 
 AS
@@ -484,10 +583,6 @@ BEGIN
 END
 GO
 
-SELECT * FROM UTNIX.Chofer
-GO
-
------------------------------------------------------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE UTNIX.Migrar_Modelo
 AS
@@ -499,10 +594,6 @@ BEGIN
 END
 GO
 
-SELECT * FROM UTNIX.Modelo
-GO
-
------------------------------------------------------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE UTNIX.Migrar_Marca
 AS
@@ -514,10 +605,6 @@ BEGIN
 END 
 GO
 
-SELECT * FROM UTNIX.Marca
-GO
-
------------------------------------------------------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE UTNIX.Migrar_Mecanico
 AS
@@ -529,10 +616,48 @@ BEGIN
 END
 GO
 
-SELECT * FROM UTNIX.Mecanico
+
+CREATE PROCEDURE UTNIX.Migrar_Taller
+AS
+BEGIN
+	INSERT INTO UTNIX.Taller (taller_nombre, taller_mail, taller_direccion, taller_codigo_ciudad, taller_telefono)
+		SELECT DISTINCT TALLER_NOMBRE, TALLER_MAIL, TALLER_DIRECCION, UTNIX.Obtener_COD_Ciudad(TALLER_CIUDAD), TALLER_TELEFONO FROM gd_esquema.Maestra
+		WHERE TALLER_NOMBRE IS NOT NULL
+		ORDER BY 1
+END
 GO
 
------------------------------------------------------------------------------------------------------------------------------------------
+
+CREATE PROCEDURE UTNIX.Migrar_Estado
+AS
+BEGIN
+	INSERT INTO UTNIX.Estado (estado_descripcion)
+		SELECT DISTINCT ORDEN_TRABAJO_ESTADO FROM gd_esquema.Maestra
+		WHERE ORDEN_TRABAJO_ESTADO IS NOT NULL	
+END
+INSERT INTO UTNIX.Estado VALUES ('En Proceso')		-- Para agregar un estado más
+Go
+
+
+CREATE PROCEDURE UTNIX.Migrar_Orden_Trabajo
+AS
+BEGIN
+	INSERT INTO UTNIX.Orden_Trabajo (orden_trabajo_fecha, orden_trabajo_camion_codigo, orden_trabajo_estado_codigo, orden_trabajo_taller_codigo)
+		SELECT DISTINCT ORDEN_TRABAJO_FECHA, UTNIX.Obtener_COD_Camion(CAMION_PATENTE), UTNIX.Obtener_COD_Estado(ORDEN_TRABAJO_ESTADO), UTNIX.Obtener_COD_Taller(TALLER_NOMBRE) FROM gd_esquema.Maestra
+		WHERE ORDEN_TRABAJO_FECHA IS NOT NULL
+END
+GO
+
+
+CREATE PROCEDURE UTNIX.Migrar_Tarea_a_Realizar
+AS
+BEGIN
+	INSERT INTO UTNIX.Tarea_a_Realizar (tarea_a_realizar_orden_trabajo_codigo, tarea_a_realizar_tarea_codigo, tarea_a_realizar_mecanico_legajo, tarea_a_realizar_fecha_inicio_planificado, tarea_a_realizar_fecha_inicio, tarea_a_realizar_fecha_fin)
+		SELECT DISTINCT UTNIX.Obtener_COD_OT(ORDEN_TRABAJO_FECHA, TALLER_NOMBRE, CAMION_PATENTE), TAREA_CODIGO, MECANICO_NRO_LEGAJO, TAREA_FECHA_INICIO_PLANIFICADO, TAREA_FECHA_INICIO, TAREA_FECHA_FIN FROM gd_esquema.Maestra
+		WHERE TAREA_CODIGO IS NOT NULL
+END
+GO
+
 
 CREATE PROCEDURE UTNIX.Migrar_Ciudad
 AS
@@ -546,10 +671,6 @@ BEGIN
 END
 GO
 
-SELECT * FROM UTNIX.Ciudad
-GO
-
------------------------------------------------------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE UTNIX.Migrar_Recorrido
 AS
@@ -560,20 +681,16 @@ BEGIN
 END
 GO
 
-SELECT * FROM UTNIX.Recorrido
 
--- Podriamos hacer una vista con esto, para verlo mas detallado y mejor
-SELECT recorrido_codigo AS [Codigo del Recorrido]
-	, CiuOrigen.ciudad_descripcion AS [Ciudad de Origen]
-	, CiuDestino.ciudad_descripcion AS [Ciudade de Destino]
-	, recorrido_km AS [KM del Recorrido]
-	, recorrido_precio AS [Precio del Recorrido]  
-	FROM UTNIX.Recorrido
-		JOIN UTNIX.Ciudad CiuOrigen ON CiuOrigen.ciudad_codigo = recorrido_ciudad_origen_codigo
-		JOIN UTNIX.Ciudad CiuDestino ON CiuDestino.ciudad_codigo = recorrido_ciudad_destino_codigo
+CREATE PROCEDURE UTNIX.Migrar_Viaje
+AS
+BEGIN
+	INSERT INTO UTNIX.Viaje (viaje_camion_codigo, viaje_chofer_legajo, viaje_recorrido_codigo, viaje_fecha_inicio, viaje_fecha_fin, viaje_consumo_combustible)
+		SELECT DISTINCT  UTNIX.Obtener_COD_Camion(CAMION_PATENTE), CHOFER_NRO_LEGAJO, UTNIX.Obtener_COD_Recorrido(RECORRIDO_CIUDAD_ORIGEN, RECORRIDO_CIUDAD_DESTINO), VIAJE_FECHA_INICIO, VIAJE_FECHA_FIN, VIAJE_CONSUMO_COMBUSTIBLE FROM gd_esquema.Maestra
+		WHERE CHOFER_NRO_LEGAJO IS NOT NULL
+END
 GO
 
------------------------------------------------------------------------------------------------------------------------------------------
 
 CREATE PROCEDURE UTNIX.Migrar_Camion
 AS
@@ -584,8 +701,54 @@ BEGIN
 END
 GO
 
-SELECT * FROM UTNIX.Camion
+
+/*---------------------------------------------------------------------------------------------------------------------------
+									EJECUCIÓN DE LOS PROCEDURES PARA MIGRAR LOS DATOS
+---------------------------------------------------------------------------------------------------------------------------*/
+
+
+EXEC UTNIX.Migrar_Tipo_Tarea
+EXEC UTNIX.Migrar_Tarea
+EXEC UTNIX.Migrar_Material
+EXEC UTNIX.Migrar_Material_x_Tarea
+EXEC UTNIX.Migrar_Ciudad
+EXEC UTNIX.Migrar_Recorrido
+EXEC UTNIX.Migrar_Modelo
+EXEC UTNIX.Migrar_Marca
+EXEC UTNIX.Migrar_Camion
+EXEC UTNIX.Migrar_Estado
+EXEC UTNIX.Migrar_Mecanico
+EXEC UTNIX.Migrar_Taller
+EXEC UTNIX.Migrar_Chofer
+EXEC UTNIX.Migrar_Orden_Trabajo
+EXEC UTNIX.Migrar_Viaje
+EXEC UTNIX.Migrar_Tipo_Paquete
+EXEC UTNIX.Migrar_Paquete
+
+
+SELECT * FROM UTNIX.Orden_Trabajo
+
+
+-- Para tener un ejemplo de la cantidad de Materiales para Cada tarea
+SELECT tarea_codigo, COUNT(material_codigo) AS [Cantidad de Materiales]
+FROM UTNIX.Material_x_Tarea
+GROUP BY tarea_codigo
 GO
+
+
+SELECT paquete_codigo, tipo_paquete_descripcion, paquete_viaje_codigo 
+FROM UTNIX.Paquete
+	JOIN UTNIX.Tipo_Paquete ON tipo_paquete_codigo = paquete_tipo_codigo
+	JOIN UTNIX.Viaje ON viaje_codigo = paquete_viaje_codigo
+ORDER BY 3
+
+SELECT COUNT(DISTINCT paquete_codigo) AS [Cantidad de Paquetes que tiene el Viaje]
+	, viaje_codigo AS [Código del Viaje]
+FROM UTNIX.Viaje 
+	JOIN UTNIX.Paquete ON paquete_viaje_codigo = viaje_codigo
+GROUP BY viaje_codigo
+GO
+
 
 -- Podriamos hacer una vista con esto, para verlo mas detallado y mejor
 SELECT camion_codigo AS [Codigo del Camion]
@@ -601,19 +764,14 @@ SELECT camion_codigo AS [Codigo del Camion]
 GO
 
 
-/*---------------------------------------------------------------------------------------------------------------------------
-									EJECUCIÓN DE LOS PROCEDURES PARA MIGRAR LOS DATOS
----------------------------------------------------------------------------------------------------------------------------*/
 
-EXEC UTNIX.Migrar_Material
-EXEC UTNIX.Migrar_Material_x_Tarea
-EXEC UTNIX.Migrar_Tipo_Tarea
-EXEC UTNIX.Migrar_Tarea
-EXEC UTNIX.Migrar_Tipo_Paquete
-EXEC UTNIX.Migrar_Chofer
-EXEC UTNIX.Migrar_Modelo
-EXEC UTNIX.Migrar_Marca
-EXEC UTNIX.Migrar_Mecanico
-EXEC UTNIX.Migrar_Ciudad
-EXEC UTNIX.Migrar_Recorrido
-EXEC UTNIX.Migrar_Camion
+-- Podriamos hacer una vista con esto, para verlo mas detallado y mejor
+SELECT recorrido_codigo AS [Codigo del Recorrido]
+	, CiuOrigen.ciudad_descripcion AS [Ciudad de Origen]
+	, CiuDestino.ciudad_descripcion AS [Ciudade de Destino]
+	, recorrido_km AS [KM del Recorrido]
+	, recorrido_precio AS [Precio del Recorrido]  
+	FROM UTNIX.Recorrido
+		JOIN UTNIX.Ciudad CiuOrigen ON CiuOrigen.ciudad_codigo = recorrido_ciudad_origen_codigo
+		JOIN UTNIX.Ciudad CiuDestino ON CiuDestino.ciudad_codigo = recorrido_ciudad_destino_codigo
+GO
