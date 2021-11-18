@@ -1003,21 +1003,3 @@ EXEC UTNIX.Migrar_Tarea_a_Realizar
 EXEC UTNIX.Migrar_Viaje
 EXEC UTNIX.Migrar_Tipo_Paquete
 EXEC UTNIX.Migrar_Paquete				
-
-
-SELECT * FROM UTNIX.v_CantidadMateriales_x_Tarea
-SELECT * FROM UTNIX.v_CantidadPaquetes_x_Tipo_x_Viaje
-SELECT * FROM UTNIX.v_CantidadPaquetes_x_Viaje
-SELECT * FROM UTNIX.v_Paquete
-SELECT * FROM UTNIX.v_Tarea_a_Realizar
-SELECT * FROM UTNIX.v_Viajes
-
-
-select taller_codigo, taller_nombre, taller_direccion, taller_codigo_ciudad, mecanico_legajo_numero, mecanico_nombre, mecanico_apellido, mecanico_dni, mecanico_costo_hora from utnix.Taller
-	join UTNIX.Orden_Trabajo ON orden_trabajo_taller_codigo = taller_codigo
-	join UTNIX.Tarea_a_Realizar ON tarea_a_realizar_orden_trabajo_codigo = orden_trabajo_codigo
-	join UTNIX.Mecanico ON mecanico_legajo_numero = tarea_a_realizar_mecanico_legajo
-group by taller_codigo, taller_nombre, taller_direccion, taller_codigo_ciudad, mecanico_legajo_numero, mecanico_nombre, mecanico_apellido, mecanico_dni, mecanico_costo_hora
-order by 1
-
-select * from utnix.Tarea
