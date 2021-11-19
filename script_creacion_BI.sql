@@ -139,17 +139,11 @@ IF OBJECT_ID('UTNIX.Obtener_Costo_Mano_de_Obra_por_camion') IS NOT NULL
 	DROP FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra_por_camion
 GO
 
-IF OBJECT_ID('UTNIX.Obtener_Maximo_Tiempo_Fuera_Servicio') IS NOT NULL
-	DROP FUNCTION UTNIX.Obtener_Maximo_Tiempo_Fuera_Servicio
-GO
 
 IF OBJECT_ID('UTNIX.Obtener_Rango_Etario') IS NOT NULL
 	DROP FUNCTION UTNIX.Obtener_Rango_Etario
 GO
 
-IF OBJECT_ID('UTNIX.Obtener_Facturacion_Total') IS NOT NULL
-	DROP FUNCTION UTNIX.Obtener_Facturacion_Total
-GO
 
 IF OBJECT_ID('UTNIX.Obtener_Costo_Chofer') IS NOT NULL
 	DROP FUNCTION UTNIX.Obtener_Costo_Chofer
@@ -841,7 +835,7 @@ CREATE VIEW UTNIX.v_Tareas_x_Modelo AS
 	SELECT 
 		  HF.bi_modelo_codigo AS [Modelo Código]
 		, M.bi_modelo_descripcion AS [Modelo Descripción]
-		, HF.bi_tarea_codigo
+		, HF.bi_tarea_codigo AS [Codigo de tarea]
 	FROM UTNIX.BI_Hechos_Facturaciones HF
 		JOIN UTNIX.BI_Modelo M ON M.bi_modelo_codigo = HF.bi_modelo_codigo
 	GROUP BY HF.bi_modelo_codigo, M.bi_modelo_descripcion, HF.bi_tarea_codigo 
