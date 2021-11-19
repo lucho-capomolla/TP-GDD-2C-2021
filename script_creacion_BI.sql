@@ -1,4 +1,4 @@
-USE GD2C2021
+﻿USE GD2C2021
 GO
 
 
@@ -12,6 +12,18 @@ GO
 
 IF OBJECT_ID('UTNIX.BI_Hechos_Facturaciones') IS NOT NULL
 	DROP TABLE UTNIX.BI_Hechos_Facturaciones
+GO
+
+IF OBJECT_ID('UTNIX.BI_Hechos_Taller_x_Tareas') IS NOT NULL
+	DROP TABLE UTNIX.BI_Hechos_Taller_x_Tareas
+GO
+
+IF OBJECT_ID('UTNIX.BI_Hechos_Promedio_Etario') IS NOT NULL
+	DROP TABLE UTNIX.BI_Hechos_Promedio_Etario
+GO
+
+IF OBJECT_ID('UTNIX.BI_Hechos_Ganancias') IS NOT NULL
+	DROP TABLE UTNIX.BI_Hechos_Ganancias
 GO
 
 IF OBJECT_ID('UTNIX.BI_Tiempo', 'U') IS NOT NULL
@@ -123,6 +135,18 @@ IF OBJECT_ID('UTNIX.Obtener_Maximo_Tiempo_Fuera_Servicio') IS NOT NULL
 	DROP FUNCTION UTNIX.Obtener_Maximo_Tiempo_Fuera_Servicio
 GO
 
+IF OBJECT_ID('UTNIX.Obtener_Rango_Etario') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_Rango_Etario
+GO
+
+IF OBJECT_ID('UTNIX.Obtener_Facturacion_Total') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_Facturacion_Total
+GO
+
+IF OBJECT_ID('UTNIX.Obtener_Costo_Chofer') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_Costo_Chofer
+GO
+
 
 /*---------------------------------------------------------------------------------------------------------------------------
 							BORRADO DE PROCEDURES
@@ -216,6 +240,22 @@ IF OBJECT_ID('UTNIX.BI_Migrar_Hechos_Mantenimiento_Camion') IS NOT NULL
 	DROP PROCEDURE UTNIX.BI_Migrar_Hechos_Mantenimiento_Camion
 GO
 
+IF OBJECT_ID('UTNIX.BI_Migrar_Hechos_Taller_x_Tareas') IS NOT NULL
+	DROP PROCEDURE UTNIX.BI_Migrar_Hechos_Taller_x_Tareas
+GO
+
+IF OBJECT_ID('UTNIX.BI_Migrar_Hechos_Facturaciones') IS NOT NULL
+	DROP PROCEDURE UTNIX.BI_Migrar_Hechos_Facturaciones
+GO
+
+IF OBJECT_ID('UTNIX.BI_Migrar_Hechos_Costo_Promedio_Etario') IS NOT NULL
+	DROP PROCEDURE UTNIX.BI_Migrar_Hechos_Costo_Promedio_Etario
+GO
+
+IF OBJECT_ID('UTNIX.BI_Migrar_Hechos_Ganancias') IS NOT NULL
+	DROP PROCEDURE UTNIX.BI_Migrar_Hechos_Ganancias
+GO
+
 
 /*---------------------------------------------------------------------------------------------------------------------------
 							BORRADO DE VISTAS
@@ -227,6 +267,30 @@ GO
 
 IF OBJECT_ID('UTNIX.v_Maximo_Tiempo_Fuera_de_Servicio') IS NOT NULL
 	DROP VIEW UTNIX.v_Maximo_Tiempo_Fuera_de_Servicio
+GO
+
+IF OBJECT_ID('UTNIX.v_Desvio_Promedio_Tarea') IS NOT NULL
+	DROP VIEW UTNIX.v_Desvio_Promedio_Tarea
+GO
+
+IF OBJECT_ID('UTNIX.v_Tareas_x_Modelo') IS NOT NULL
+	DROP VIEW UTNIX.v_Tareas_x_Modelo
+GO
+
+IF OBJECT_ID('UTNIX.v_Materiales_x_Taller') IS NOT NULL
+	DROP VIEW UTNIX.v_Materiales_x_Taller
+GO
+
+IF OBJECT_ID('UTNIX.v_Facturacion_x_Recorrido') IS NOT NULL
+	DROP VIEW UTNIX.v_Facturacion_x_Recorrido
+GO
+
+IF OBJECT_ID('UTNIX.v_Promedio_x_Rango_etario') IS NOT NULL
+	DROP VIEW UTNIX.v_Promedio_x_Rango_etario
+GO
+
+IF OBJECT_ID('UTNIX.v_Ganancias_x_Camion') IS NOT NULL
+	DROP VIEW UTNIX.v_Ganancias_x_Camion
 GO
 
 /*---------------------------------------------------------------------------------------------------------------------------
@@ -247,7 +311,6 @@ CREATE TABLE UTNIX.BI_Rango_Edad(
 		bi_rango_edad NVARCHAR(255) NOT NULL
 );
 GO
-
 
 CREATE TABLE UTNIX.BI_Ciudad (
 		bi_ciudad_codigo DECIMAL(18,0) PRIMARY KEY,
@@ -424,17 +487,39 @@ CREATE TABLE UTNIX.BI_Hechos_Mantenimiento_Camion (
 );
 GO
 
-
 CREATE TABLE UTNIX.BI_Hechos_Facturaciones (
 	bi_camion_codigo DECIMAL(18,0) NOT NULL,
 	bi_modelo_codigo DECIMAL(18,0) NOT NULL,
 	bi_tiempo_codigo DECIMAL(18,0) NOT NULL,
 	bi_recorrido_codigo DECIMAL(18,0) NOT NULL,
 	facturacion_total_recorrido DECIMAL(18,0) NULL,
-	ganancia_total DECIMAL(18,0) NULL
-	PRIMARY KEY (bi_camion_codigo, bi_modelo_codigo, bi_tiempo_codigo, bi_recorrido_codigo)
+	bi_tarea_codigo DECIMAL(18,0) NOT NULL,
+	PRIMARY KEY (bi_camion_codigo, bi_modelo_codigo, bi_tiempo_codigo, bi_recorrido_codigo, bi_tarea_codigo)
 );
 GO
+
+CREATE TABLE UTNIX.BI_Hechos_Promedio_Etario (
+    bi_rango_codigo DECIMAL(18,0) NOT NULL,
+    bi_costo_promedio DECIMAL(18,0) NOT NULL,
+    PRIMARY KEY (bi_rango_codigo)
+);
+GO
+
+CREATE TABLE UTNIX.BI_Hechos_Taller_x_Tareas (
+	bi_taller_codigo DECIMAL(18,0) NOT NULL,
+	bi_tarea_codigo DECIMAL(18,0) NOT NULL,
+	desvio_promedio DECIMAL(18,0) NULL,
+	bi_material_codigo NVARCHAR(100) NOT NULL,
+	PRIMARY KEY (bi_taller_codigo, bi_tarea_codigo, bi_material_codigo)
+);
+GO
+
+CREATE TABLE UTNIX.BI_Hechos_Ganancias (
+	bi_camion_codigo DECIMAL(18,0) NOT NULL,
+	ganancias DECIMAL(18,0) NULL,
+	PRIMARY KEY (bi_camion_codigo)
+);
+
 
 /*---------------------------------------------------------------------------------------------------------------------------
 							CREACION DE FOREIGN KEYs
@@ -451,32 +536,25 @@ ALTER TABLE UTNIX.BI_Hechos_Facturaciones
 	ADD FOREIGN KEY (bi_camion_codigo) REFERENCES UTNIX.BI_Camion(bi_camion_codigo),
 		FOREIGN KEY (bi_modelo_codigo) REFERENCES UTNIX.BI_Modelo(bi_modelo_codigo),
 		FOREIGN KEY (bi_tiempo_codigo) REFERENCES UTNIX.BI_Tiempo(bi_tiempo_codigo),
-		FOREIGN KEY (bi_recorrido_codigo) REFERENCES UTNIX.BI_Recorrido(bi_recorrido_codigo);
+		FOREIGN KEY (bi_recorrido_codigo) REFERENCES UTNIX.BI_Recorrido(bi_recorrido_codigo),
+		FOREIGN KEY (bi_tarea_codigo) REFERENCES UTNIX.BI_Tarea(bi_tarea_codigo);
 GO
 
-/*---------------------------------------------------------------------------------------------------------------------------
-							CREACION DE VISTAS
----------------------------------------------------------------------------------------------------------------------------*/
 
-/*� M�ximo tiempo fuera de servicio de cada cami�n por cuatrimestreSe entiende por fuera de servicio cuando el cami�n est� en el taller (tiene una OT) y no se encuentra disponible para un viaje.*/
-
-CREATE VIEW UTNIX.v_Maximo_Tiempo_Fuera_de_Servicio AS 
-	SELECT 
-		  bi_camion_codigo AS [Cami�n C�digo]
-		, bi_tiempo_codigo AS [Cuatrimestre]
-		, maximo_tiempo_fuera_servicio AS [Tiempo M�ximo en el Taller (en Horas)]
-	FROM UTNIX.BI_Hechos_Mantenimiento_Camion
+ALTER TABLE UTNIX.BI_Hechos_Promedio_Etario
+    ADD FOREIGN KEY (bi_rango_codigo) references UTNIX.BI_Rango_Edad(bi_rango_codigo);
 GO
 
-/*� Costo total de mantenimiento por cami�n, por taller, por cuatrimestre.Se entiende por costo de mantenimiento: el costo de materiales + el costo de mano de obra insumido en cada tarea (correctivas y preventivas)*/
 
-CREATE VIEW UTNIX.v_Mantenimiento_x_Camion AS
-	SELECT 
-		  bi_camion_codigo AS [Cami�n C�digo]
-		, bi_taller_codigo AS [Taller C�digo]
-		, bi_tiempo_codigo AS [Cuatrimestre]
-		, costo_total_mantenimiento AS [Costo Total de Mantenimiento]
-	FROM UTNIX.BI_Hechos_Mantenimiento_Camion
+ALTER TABLE UTNIX.BI_Hechos_Taller_x_Tareas
+	ADD FOREIGN KEY (bi_taller_codigo) REFERENCES UTNIX.BI_Taller(bi_taller_codigo),
+		FOREIGN KEY (bi_tarea_codigo) REFERENCES UTNIX.BI_Tarea(bi_tarea_codigo),
+		FOREIGN KEY (bi_material_codigo) REFERENCES UTNIX.BI_Material(bi_material_codigo);
+GO
+
+
+ALTER TABLE UTNIX.BI_Hechos_Ganancias 
+	ADD FOREIGN KEY (bi_camion_codigo) REFERENCES UTNIX.BI_Camion(bi_camion_codigo);
 GO
 
 
@@ -532,13 +610,11 @@ BEGIN
 END
 GO
 
-
-CREATE FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra (@ORDEN_TRABAJO DECIMAL(18,0))
+CREATE FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra (@CAMION DECIMAL(18,0))
 RETURNS DECIMAL(18,0)
 AS
 BEGIN
 	DECLARE @MANO_OBRA DECIMAL(18,0), @MANO_OBRA_TOTAL DECIMAL(18,0)
-	DECLARE @TAREA DECIMAL(18,0)
 	DECLARE @DIAS DECIMAL(18,0)
 	DECLARE @FECHA_INICIO DATETIME2(3), @FECHA_FIN DATETIME2(3)
 
@@ -547,7 +623,8 @@ BEGIN
 		, @FECHA_FIN = tarea_a_realizar_fecha_fin
 	FROM UTNIX.Tarea_a_Realizar
 		JOIN UTNIX.Mecanico ON mecanico_legajo_numero = tarea_a_realizar_mecanico_legajo
-	WHERE tarea_a_realizar_orden_trabajo_codigo = @ORDEN_TRABAJO
+		JOIN UTNIX.Orden_Trabajo ON orden_trabajo_codigo = tarea_a_realizar_orden_trabajo_codigo
+	WHERE orden_trabajo_camion_codigo = @CAMION
 	GROUP BY tarea_a_realizar_fecha_inicio, tarea_a_realizar_fecha_fin
 
 	SET @DIAS = DATEDIFF(DD, @FECHA_INICIO, @FECHA_FIN)
@@ -558,8 +635,31 @@ BEGIN
 END
 GO
 
+CREATE FUNCTION UTNIX.Obtener_Costo_Chofer (@CAMION DECIMAL(18,0))
+RETURNS DECIMAL(18,0)
+AS
+BEGIN
+	DECLARE @COSTO_TOTAL DECIMAL(18,0), @COSTO DECIMAL(18,0)
+	DECLARE @FECHA_INICIO DATETIME2(3), @FECHA_FIN DATETIME2(3)
+	DECLARE @HORAS DECIMAL(18,0)
 
-CREATE FUNCTION UTNIX.Obtener_Costo_Materiales (@ORDEN_TRABAJO DECIMAL(18,0))
+	SELECT @COSTO = ISNULL(SUM(chofer_costo_hora), 0)
+		, @FECHA_INICIO = viaje_fecha_inicio
+		, @FECHA_FIN = viaje_fecha_fin
+	FROM UTNIX.Viaje
+		JOIN UTNIX.Chofer ON chofer_numero_legajo = viaje_chofer_legajo
+	WHERE viaje_camion_codigo = @CAMION
+	GROUP BY chofer_costo_hora, viaje_fecha_inicio, viaje_fecha_fin
+
+	SET @HORAS = DATEDIFF(HH, @FECHA_INICIO, @FECHA_FIN)
+
+	SET @COSTO_TOTAL = @COSTO * @HORAS 
+
+	RETURN @COSTO_TOTAL
+END
+GO
+
+CREATE FUNCTION UTNIX.Obtener_Costo_Materiales (@CAMION DECIMAL(18,0))
 RETURNS DECIMAL(18,0)
 AS
 BEGIN
@@ -567,8 +667,10 @@ BEGIN
 	DECLARE @TAREA DECIMAL(18,0)
 
 	DECLARE cursorCosto CURSOR FOR
-		SELECT tarea_a_realizar_tarea_codigo FROM UTNIX.Tarea_a_Realizar
-		WHERE tarea_a_realizar_orden_trabajo_codigo = @ORDEN_TRABAJO
+		SELECT tarea_a_realizar_tarea_codigo 
+		FROM UTNIX.Tarea_a_Realizar
+			JOIN UTNIX.Orden_Trabajo ON orden_trabajo_codigo = tarea_a_realizar_orden_trabajo_codigo
+		WHERE orden_trabajo_camion_codigo = @CAMION
 
 	OPEN cursorCosto
 	FETCH NEXT FROM cursorCosto INTO @TAREA
@@ -591,25 +693,129 @@ BEGIN
 END
 GO
 
-/*
-CREATE FUNCTION UTNIX.Obtener_Maximo_Tiempo_Fuera_Servicio(@CAMION_CODIGO DECIMAL(18,0), @CUATRIMESTRE DECIMAL(18,0))
+CREATE FUNCTION UTNIX.Obtener_Rango_Etario(@NACIMIENTO DATETIME2(3)) 
 RETURNS DECIMAL(18,0)
 AS
 BEGIN
-	DECLARE @TIEMPO_MAXIMO DECIMAL(18,0)
+    DECLARE @EDAD_ACTUAL DECIMAL(18,0)
+    DECLARE @RANGO_ETARIO DECIMAL(18,0)
 
-	SET @TIEMPO_MAXIMO = (SELECT TOP 1 SUM(tarea_tiempo_estimado) 
-						 FROM UTNIX.Camion
-						 	 JOIN UTNIX.Orden_Trabajo ON orden_trabajo_camion_codigo = camion_codigo
-							 JOIN UTNIX.Tarea_a_Realizar ON tarea_a_realizar_orden_trabajo_codigo = orden_trabajo_codigo
-							 JOIN UTNIX.Tarea ON tarea_codigo = tarea_a_realizar_tarea_codigo
-						 WHERE camion_codigo = @CAMION_CODIGO
-							AND UTNIX.Obtener_ID_Tiempo(tarea_a_realizar_fecha_inicio) = @CUATRIMESTRE
-						 GROUP BY camion_codigo, camion_patente, UTNIX.Obtener_ID_Tiempo(tarea_a_realizar_fecha_inicio)
-						 ORDER BY SUM(tarea_tiempo_estimado) DESC)
+    SET @EDAD_ACTUAL = DATEDIFF(YY, @NACIMIENTO, GETDATE())
 
-	RETURN @TIEMPO_MAXIMO
+	IF @EDAD_ACTUAL BETWEEN 18 AND 30
+        SET @RANGO_ETARIO = (SELECT bi_rango_codigo FROM UTNIX.BI_Rango_Edad WHERE bi_rango_edad = '18 - 30 años')
+    ELSE IF @EDAD_ACTUAL BETWEEN 31 AND 50
+		SET @RANGO_ETARIO = (SELECT bi_rango_codigo FROM UTNIX.BI_Rango_Edad WHERE bi_rango_edad = '31 - 50 años')
+	ELSE 
+		SET @RANGO_ETARIO = (SELECT bi_rango_codigo FROM UTNIX.BI_Rango_Edad WHERE bi_rango_edad = '> 50 años')
+
+    RETURN @RANGO_ETARIO
 END
+GO
+
+
+
+/*---------------------------------------------------------------------------------------------------------------------------
+							CREACION DE VISTAS
+---------------------------------------------------------------------------------------------------------------------------*/
+
+/*• Máximo tiempo fuera de servicio de cada camión por cuatrimestre
+Se entiende por fuera de servicio cuando el camión está en el taller (tiene una OT) y no se encuentra disponible para un viaje.*/
+
+CREATE VIEW UTNIX.v_Maximo_Tiempo_Fuera_de_Servicio AS 
+	SELECT 
+		  bi_camion_codigo AS [Camión Código]
+		, bi_tiempo_codigo AS [Cuatrimestre]
+		, maximo_tiempo_fuera_servicio AS [Tiempo Máximo en el Taller (en Horas)]
+	FROM UTNIX.BI_Hechos_Mantenimiento_Camion
+GO
+
+
+/*• Costo total de mantenimiento por camión, por taller, por cuatrimestre.
+Se entiende por costo de mantenimiento: el costo de materiales + el costo de mano de obra insumido en cada tarea (correctivas y preventivas)*/
+
+CREATE VIEW UTNIX.v_Mantenimiento_x_Camion AS
+	SELECT 
+		  bi_camion_codigo AS [Camión Código]
+		, bi_taller_codigo AS [Taller Código]
+		, bi_tiempo_codigo AS [Cuatrimestre]
+		, costo_total_mantenimiento AS [Costo Total de Mantenimiento]
+	FROM UTNIX.BI_Hechos_Mantenimiento_Camion
+	GROUP BY bi_camion_codigo, bi_taller_codigo, bi_tiempo_codigo, costo_total_mantenimiento
+GO
+
+
+/*• Desvío promedio de cada tarea x taller.*/
+
+CREATE VIEW UTNIX.v_Desvio_Promedio_Tarea AS
+	SELECT
+		  bi_taller_codigo AS [Taller Código]
+		, desvio_promedio AS [Desvío Promedio]
+	FROM UTNIX.BI_Hechos_Taller_x_Tareas
+	GROUP BY bi_taller_codigo, desvio_promedio
+GO
+
+
+/*• Las 5 tareas que más se realizan por modelo de camión.*/
+
+CREATE VIEW UTNIX.v_Tareas_x_Modelo AS
+	SELECT 
+		  HF.bi_modelo_codigo AS [Modelo Código]
+		, M.bi_modelo_descripcion AS [Modelo Descripción]
+		, HF.bi_tarea_codigo
+	FROM UTNIX.BI_Hechos_Facturaciones HF
+		JOIN UTNIX.BI_Modelo M ON M.bi_modelo_codigo = HF.bi_modelo_codigo
+	GROUP BY HF.bi_modelo_codigo, M.bi_modelo_descripcion, HF.bi_tarea_codigo 
+GO
+
+
+/*• Los 10 materiales más utilizados por taller*/
+
+CREATE VIEW UTNIX.v_Materiales_x_Taller AS
+	SELECT 
+		  HTT.bi_taller_codigo AS [Taller Código]
+		, HTT.bi_material_codigo AS [Material Código]
+		, MAT.bi_material_descripcion AS [Material Nombre]
+	FROM UTNIX.BI_Hechos_Taller_x_Tareas HTT
+		JOIN UTNIX.BI_Material MAT ON MAT.bi_material_codigo = HTT.bi_material_codigo 
+	GROUP BY HTT.bi_taller_codigo, HTT.bi_material_codigo, MAT.bi_material_descripcion
+GO
+
+
+/*• Facturación total por recorrido por cuatrimestre. (En función de la cantidad y tipo de paquetes que transporta el camión y el recorrido)*/
+
+CREATE VIEW UTNIX.v_Facturacion_x_Recorrido AS
+	SELECT 
+		  HF.bi_recorrido_codigo AS [Código del Recorrido]
+		, UTNIX.Obtener_Nombre_Ciudad(R.bi_recorrido_ciudad_origen_codigo) AS [Ciudad de Origen]
+		, UTNIX.Obtener_Nombre_Ciudad(R.bi_recorrido_ciudad_destino_codigo) AS [Ciudad de Destino]
+		, HF.bi_tiempo_codigo AS [Cuatrimestre]
+		, HF.facturacion_total_recorrido AS [Facturación Total]
+	FROM UTNIX.BI_Hechos_Facturaciones HF
+		JOIN UTNIX.BI_Recorrido R ON R.bi_recorrido_codigo = HF.bi_recorrido_codigo
+	GROUP BY HF.bi_recorrido_codigo, UTNIX.Obtener_Nombre_Ciudad(R.bi_recorrido_ciudad_origen_codigo), UTNIX.Obtener_Nombre_Ciudad(R.bi_recorrido_ciudad_destino_codigo), HF.bi_tiempo_codigo, HF.facturacion_total_recorrido
+GO
+
+
+/*• Costo promedio por rango etario de choferes.*/
+
+CREATE VIEW UTNIX.v_Promedio_x_Rango_etario AS 
+	SELECT 
+		  RE.bi_rango_edad AS [Rango Etario]
+		, HPE.bi_costo_promedio AS [Costo Promedio]
+	FROM UTNIX.BI_Hechos_Promedio_Etario HPE
+		JOIN UTNIX.BI_Rango_Edad RE ON RE.bi_rango_codigo = HPE.bi_rango_codigo
+	GROUP BY RE.bi_rango_edad, HPE.bi_costo_promedio
+GO
+
+
+/*• Ganancia por camión (Ingresos – Costo de viaje – Costo de mantenimiento)
+	- Ingresos: en función de la cantidad y tipo de paquetes que transporta el camión y el recorrido.
+	- Costo de viaje: costo del chofer + el costo de combustible. Tomar precio por lt de combustible $100.-	- Costo de mantenimiento: costo de materiales + costo de mano de obra.*/
+/*
+CREATE VIEW UTNIX.v_Ganancias_x_Camion AS
+	SELECT 
+	FROM UTNIX.BI_Hechos_Ganancias
 GO*/
 
 
@@ -623,12 +829,11 @@ CREATE PROCEDURE UTNIX.BI_Migrar_Rango_Edad
 AS
 BEGIN
 	INSERT INTO UTNIX.BI_Rango_Edad (bi_rango_edad)
-		VALUES 	('18 - 30 a�os'),
-				('31 - 50 a�os'),
-				('> 50 a�os')
+		VALUES 	('18 - 30 años'),
+				('31 - 50 años'),
+				('> 50 años')
 END
 GO
-
 
 CREATE PROCEDURE UTNIX.BI_Migrar_Tiempo
 AS
@@ -647,7 +852,6 @@ BEGIN
 END
 GO
 
-
 CREATE PROCEDURE UTNIX.BI_Migrar_Material
 AS
 BEGIN
@@ -655,7 +859,6 @@ BEGIN
 		SELECT * FROM UTNIX.Material
 END
 GO
-
 
 CREATE PROCEDURE UTNIX.BI_Migrar_Material_x_Tarea
 AS
@@ -665,7 +868,6 @@ BEGIN
 END
 GO
 
-
 CREATE PROCEDURE UTNIX.BI_Migrar_Tipo_Tarea
 AS
 BEGIN
@@ -673,7 +875,6 @@ BEGIN
 		SELECT * FROM UTNIX.Tipo_Tarea
 END
 GO
-
 
 CREATE PROCEDURE UTNIX.BI_Migrar_Tarea
 AS
@@ -684,7 +885,6 @@ BEGIN
 END
 GO
 
-
 CREATE PROCEDURE UTNIX.BI_Migrar_Chofer 
 AS
 BEGIN
@@ -692,7 +892,6 @@ BEGIN
 		SELECT * FROM UTNIX.Chofer
 END
 GO
-
 
 CREATE PROCEDURE UTNIX.BI_Migrar_Modelo
 AS
@@ -702,7 +901,6 @@ BEGIN
 END
 GO
 
-
 CREATE PROCEDURE UTNIX.BI_Migrar_Marca
 AS
 BEGIN
@@ -710,7 +908,6 @@ BEGIN
 		SELECT * FROM UTNIX.Marca
 END
 GO
-
 
 CREATE PROCEDURE UTNIX.BI_Migrar_Mecanico
 AS
@@ -720,7 +917,6 @@ BEGIN
 END
 GO
 
-
 CREATE PROCEDURE UTNIX.BI_Migrar_Taller
 AS
 BEGIN
@@ -728,7 +924,6 @@ BEGIN
 		SELECT * FROM UTNIX.Taller
 END
 GO
-
 
 CREATE PROCEDURE UTNIX.BI_Migrar_Estado
 AS
@@ -738,7 +933,6 @@ BEGIN
 END
 GO
 
-
 CREATE PROCEDURE UTNIX.BI_Migrar_Orden_Trabajo
 AS
 BEGIN
@@ -746,7 +940,6 @@ BEGIN
 		SELECT * FROM UTNIX.Orden_Trabajo
 END
 GO
-
 
 CREATE PROCEDURE UTNIX.BI_Migrar_Tarea_a_Realizar
 AS
@@ -756,7 +949,6 @@ BEGIN
 END
 GO
 
-
 CREATE PROCEDURE UTNIX.BI_Migrar_Ciudad
 AS
 BEGIN
@@ -764,7 +956,6 @@ BEGIN
 		SELECT * FROM UTNIX.Ciudad
 END
 GO
-
 
 CREATE PROCEDURE UTNIX.BI_Migrar_Recorrido
 AS
@@ -774,7 +965,6 @@ BEGIN
 END
 GO
 
-
 CREATE PROCEDURE UTNIX.BI_Migrar_Viaje
 AS
 BEGIN
@@ -782,7 +972,6 @@ BEGIN
 		SELECT * FROM UTNIX.Viaje
 END
 GO
-
 
 CREATE PROCEDURE UTNIX.BI_Migrar_Tipo_Paquete
 AS
@@ -792,7 +981,6 @@ BEGIN
 END
 GO
 
-
 CREATE PROCEDURE UTNIX.BI_Migrar_Paquete
 AS
 BEGIN
@@ -800,7 +988,6 @@ BEGIN
 		SELECT * FROM UTNIX.Paquete
 END
 GO
-
 
 CREATE PROCEDURE UTNIX.BI_Migrar_Camion
 AS
@@ -820,7 +1007,7 @@ BEGIN
 	SELECT DISTINCT C.camion_codigo
 		, T.taller_codigo
 		, UTNIX.Obtener_ID_Tiempo(OT.orden_trabajo_fecha)
-		, SUM(UTNIX.Obtener_Costo_Materiales(OT.orden_trabajo_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra(OT.orden_trabajo_codigo))
+		, SUM(UTNIX.Obtener_Costo_Materiales(C.camion_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra(C.camion_codigo))
 		, (SELECT TOP 1 SUM(tarea_tiempo_estimado)
 		   FROM UTNIX.Tarea_a_Realizar
 			   JOIN UTNIX.Orden_Trabajo ON orden_trabajo_codigo = tarea_a_realizar_orden_trabajo_codigo
@@ -834,36 +1021,102 @@ BEGIN
 		JOIN UTNIX.Taller T ON T.taller_codigo = OT.orden_trabajo_taller_codigo
 	GROUP BY C.camion_codigo, T.taller_codigo, UTNIX.Obtener_ID_Tiempo(OT.orden_trabajo_fecha)
 	ORDER BY C.camion_codigo, T.taller_codigo, UTNIX.Obtener_ID_Tiempo(OT.orden_trabajo_fecha) ASC
-	 
+
 END
 GO
 
-
--- Capaz se puede hacer una tabla sin el recorrido, o que las ganancias sean en otra, porque al hacer el costo de mantenimiento tarda bastante porque hace bastantes consultas dentro
 CREATE PROCEDURE UTNIX.BI_Migrar_Hechos_Facturaciones
 AS
 BEGIN
-	INSERT INTO UTNIX.BI_Hechos_Facturaciones (bi_camion_codigo, bi_modelo_codigo, bi_tiempo_codigo, bi_recorrido_codigo)
+	INSERT INTO UTNIX.BI_Hechos_Facturaciones (bi_camion_codigo, bi_modelo_codigo, bi_tiempo_codigo, bi_recorrido_codigo, facturacion_total_recorrido, bi_tarea_codigo)
 	SELECT DISTINCT C.camion_codigo
 		, M.modelo_codigo
-		--, UTNIX.Obtener_ID_Tiempo(V.viaje_fecha_inicio)
-		--, R.recorrido_codigo
-		--,  HACER FUNCION PARA OBTENER LA FACTURACION TOTAL DEL RECORRIDO EN UN CUATRIMESTRE
-		--, HACER LA FUNCION PARA OBTENER LA GANANCIA TOTAL DEL CAMION (ingresos - costo de viaje - costo de mantenimiento)
-		, SUM(UTNIX.Obtener_Costo_Materiales(OT.orden_trabajo_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra(OT.orden_trabajo_codigo))
+		, UTNIX.Obtener_ID_Tiempo(V.viaje_fecha_inicio)
+		, R.recorrido_codigo
+		,  (SELECT SUM(paquete_cantidad * tipo_paquete_precio)
+			FROM UTNIX.Viaje
+				JOIN UTNIX.Paquete ON paquete_viaje_codigo = viaje_codigo
+				JOIN UTNIX.Tipo_Paquete ON tipo_paquete_codigo = paquete_tipo_codigo
+			WHERE viaje_recorrido_codigo = R.recorrido_codigo
+				AND UTNIX.Obtener_ID_Tiempo(viaje_fecha_inicio) = UTNIX.Obtener_ID_Tiempo(V.viaje_fecha_inicio))
+		, TR.tarea_a_realizar_tarea_codigo
 	FROM UTNIX.Camion C
 		JOIN UTNIX.Orden_Trabajo OT ON OT.orden_trabajo_camion_codigo = C.camion_codigo
+		JOIN UTNIX.Tarea_a_Realizar TR ON TR.tarea_a_realizar_orden_trabajo_codigo = OT.orden_trabajo_codigo
 		JOIN UTNIX.Modelo M ON M.modelo_codigo = C.camion_modelo_codigo
-		--JOIN UTNIX.Viaje V ON V.viaje_camion_codigo = C.camion_codigo
-		--JOIN UTNIX.Recorrido R ON R.recorrido_codigo = V.viaje_recorrido_codigo
-	GROUP BY C.camion_codigo, M.modelo_codigo--, UTNIX.Obtener_ID_Tiempo(V.viaje_fecha_inicio), R.recorrido_codigo
-	ORDER BY C.camion_codigo, M.modelo_codigo--, UTNIX.Obtener_ID_Tiempo(V.viaje_fecha_inicio) ASC
+		JOIN UTNIX.Viaje V ON V.viaje_camion_codigo = C.camion_codigo
+		JOIN UTNIX.Recorrido R ON R.recorrido_codigo = V.viaje_recorrido_codigo
+	WHERE TR.tarea_a_realizar_tarea_codigo IN   (SELECT TOP 5 tarea_a_realizar_tarea_codigo
+											  FROM UTNIX.Tarea_a_Realizar
+												  JOIN UTNIX.Orden_Trabajo ON orden_trabajo_codigo = tarea_a_realizar_orden_trabajo_codigo
+												  JOIN UTNIX.Camion ON camion_codigo = orden_trabajo_camion_codigo
+											  WHERE camion_modelo_codigo = M.modelo_codigo
+											  GROUP BY tarea_a_realizar_tarea_codigo
+											  ORDER BY COUNT(tarea_a_realizar_tarea_codigo) DESC)
+	GROUP BY C.camion_codigo, M.modelo_codigo, UTNIX.Obtener_ID_Tiempo(V.viaje_fecha_inicio), R.recorrido_codigo, TR.tarea_a_realizar_tarea_codigo
+	ORDER BY C.camion_codigo, M.modelo_codigo, UTNIX.Obtener_ID_Tiempo(V.viaje_fecha_inicio) ASC
+END
+GO
+
+CREATE PROCEDURE UTNIX.BI_Migrar_Hechos_Taller_x_Tareas
+AS
+BEGIN
+	INSERT INTO UTNIX.BI_Hechos_Taller_x_Tareas (bi_taller_codigo, bi_tarea_codigo, desvio_promedio, bi_material_codigo)
+	SELECT taller_codigo
+		, tarea_a_realizar_tarea_codigo
+		, AVG(DATEDIFF(DD, tarea_a_realizar_fecha_inicio_planificado, tarea_a_realizar_fecha_inicio))
+		, material_codigo
+	FROM UTNIX.Taller
+		JOIN UTNIX.Orden_Trabajo ON orden_trabajo_taller_codigo = taller_codigo
+		JOIN UTNIX.Tarea_a_Realizar ON tarea_a_realizar_orden_trabajo_codigo = orden_trabajo_codigo
+		JOIN UTNIX.Material_x_Tarea ON tarea_codigo = tarea_a_realizar_tarea_codigo
+	WHERE material_codigo IN   (SELECT TOP 10 MXT.material_codigo
+								FROM UTNIX.Material_x_Tarea MXT
+									JOIN UTNIX.Tarea T ON T.tarea_codigo = MXT.tarea_codigo
+									JOIN UTNIX.Tarea_a_Realizar TR ON TR.tarea_a_realizar_tarea_codigo = T.tarea_codigo
+									JOIN UTNIX.Orden_Trabajo OT ON OT.orden_trabajo_codigo = TR.tarea_a_realizar_orden_trabajo_codigo
+								WHERE OT.orden_trabajo_taller_codigo = taller_codigo
+								GROUP BY MXT.material_codigo
+								ORDER BY COUNT(MXT.material_codigo) DESC)
+	GROUP BY taller_codigo, tarea_a_realizar_tarea_codigo, material_codigo
+	ORDER BY taller_codigo, tarea_a_realizar_tarea_codigo
+END
+GO
+
+CREATE PROCEDURE UTNIX.BI_Migrar_Hechos_Costo_Promedio_Etario
+AS
+BEGIN
+    INSERT INTO UTNIX.BI_Hechos_Promedio_Etario(bi_rango_codigo, bi_costo_promedio)
+    SELECT UTNIX.Obtener_Rango_Etario(bi_chofer_fecha_nacimiento)
+		, AVG(bi_chofer_costo_hora)
+    FROM  UTNIX.BI_Chofer
+    GROUP BY UTNIX.Obtener_Rango_Etario(bi_chofer_fecha_nacimiento)
+
 END
 GO
 
 
+CREATE PROCEDURE UTNIX.BI_Migrar_Hechos_Ganancias
+AS
+BEGIN
+	INSERT INTO UTNIX.BI_Hechos_Ganancias (bi_camion_codigo, ganancias)
+	SELECT C.camion_codigo
+		, (SELECT SUM(paquete_cantidad * tipo_paquete_precio)
+			FROM UTNIX.Viaje
+				JOIN UTNIX.Paquete ON paquete_viaje_codigo = viaje_codigo
+				JOIN UTNIX.Tipo_Paquete ON tipo_paquete_codigo = paquete_tipo_codigo
+			WHERE viaje_camion_codigo = C.camion_codigo)
+		, SUM(UTNIX.Obtener_Costo_Chofer(C.camion_codigo) + V.viaje_consumo_combustible * 100)
+		, SUM(UTNIX.Obtener_Costo_Materiales(C.camion_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra(C.camion_codigo))
+	FROM UTNIX.Camion C
+		JOIN UTNIX.Viaje V ON V.viaje_camion_codigo = C.camion_codigo
+	GROUP BY C.camion_codigo
+	ORDER BY C.camion_codigo
+END
+GO
+
 /*---------------------------------------------------------------------------------------------------------------------------
-							EJECUCI�N DE LOS PROCEDURES PARA MIGRAR LOS DATOS
+							EJECUCIÓN DE LOS PROCEDURES PARA MIGRAR LOS DATOS
 ---------------------------------------------------------------------------------------------------------------------------*/
 
 EXEC UTNIX.BI_Migrar_Rango_Edad
@@ -887,57 +1140,17 @@ EXEC UTNIX.BI_Migrar_Viaje
 EXEC UTNIX.BI_Migrar_Tipo_Paquete
 EXEC UTNIX.BI_Migrar_Paquete	
 EXEC UTNIX.BI_Migrar_Hechos_Mantenimiento_Camion
+EXEC UTNIX.BI_Migrar_Hechos_Facturaciones
+EXEC UTNIX.BI_Migrar_Hechos_Taller_x_Tareas
+EXEC UTNIX.BI_Migrar_Hechos_Costo_Promedio_Etario
+--EXEC UTNIX.BI_Migrar_Hechos_Ganancias
 GO
 
 SELECT * FROM UTNIX.v_Maximo_Tiempo_Fuera_de_Servicio
 SELECT * FROM UTNIX.v_Mantenimiento_x_Camion
-
-/*
-SELECT * FROM UTNIX.BI_Tiempo
-SELECT * FROM UTNIX.BI_Rango_Edad
-
-select taller_codigo, taller_nombre, taller_direccion, taller_codigo_ciudad, mecanico_legajo_numero, mecanico_nombre, mecanico_apellido, mecanico_dni, mecanico_costo_hora from utnix.Taller
-	join UTNIX.Orden_Trabajo ON orden_trabajo_taller_codigo = taller_codigo
-	join UTNIX.Tarea_a_Realizar ON tarea_a_realizar_orden_trabajo_codigo = orden_trabajo_codigo
-	join UTNIX.Mecanico ON mecanico_legajo_numero = tarea_a_realizar_mecanico_legajo
-group by taller_codigo, taller_nombre, taller_direccion, taller_codigo_ciudad, mecanico_legajo_numero, mecanico_nombre, mecanico_apellido, mecanico_dni, mecanico_costo_hora
-order by 1
-
-
-
-SELECT recorrido_codigo AS [Recorrido C�digo]
-	, UTNIX.Obtener_Cuatrimestre(viaje_fecha_fin) AS [Cuatrimestre]
-	--, usar una funcion recorriendo con Cursores, y hacer la Sumatoria de la cantidad de paquetes * el precio de cada tipo AS [Facturacion Total]
-FROM UTNIX.Paquete PAQ
-	JOIN UTNIX.Viaje ON viaje_codigo = PAQ.paquete_viaje_codigo
-	JOIN UTNIX.Recorrido ON recorrido_codigo = viaje_recorrido_codigo
-GROUP BY recorrido_codigo, UTNIX.Obtener_Cuatrimestre(viaje_fecha_fin)
-ORDER BY [Recorrido C�digo], [Cuatrimestre]
-GO
-*/
-
-/*
-SELECT UTNIX.Obtener_ID_Tiempo(tarea_a_realizar_fecha_inicio_planificado) AS [Tiempo]
-	, tarea_a_realizar_orden_trabajo_codigo AS [Orden de Trabajo]
-	, SUM(mecanico_costo_hora) AS [Costo Mano de Obra]
-FROM UTNIX.Tarea_a_Realizar
-	JOIN UTNIX.Mecanico ON mecanico_legajo_numero = tarea_a_realizar_mecanico_legajo
-GROUP BY UTNIX.Obtener_Cuatrimestre(tarea_a_realizar_fecha_inicio_planificado), UTNIX.Obtener_ID_Tiempo(tarea_a_realizar_fecha_inicio_planificado), tarea_a_realizar_orden_trabajo_codigo
-ORDER BY UTNIX.Obtener_Cuatrimestre(tarea_a_realizar_fecha_inicio_planificado) ASC
-
-
-SELECT * FROM UTNIX.Tarea_a_Realizar
-WHERE tarea_a_realizar_orden_trabajo_codigo = 63
-
-SELECT * FROM UTNIX.BI_Tiempo
-
-
-
-SELECT SUM(mecanico_costo_hora)
-FROM UTNIX.Tarea_a_Realizar
-	JOIN UTNIX.Mecanico ON mecanico_legajo_numero = tarea_a_realizar_mecanico_legajo
-WHERE tarea_a_realizar_orden_trabajo_codigo = 62
-	AND UTNIX.Obtener_ID_Tiempo(tarea_a_realizar_fecha_inicio_planificado) = 1 
-GROUP BY UTNIX.Obtener_Cuatrimestre(tarea_a_realizar_fecha_inicio_planificado), UTNIX.Obtener_ID_Tiempo(tarea_a_realizar_fecha_inicio_planificado), tarea_a_realizar_orden_trabajo_codigo
-ORDER BY UTNIX.Obtener_Cuatrimestre(tarea_a_realizar_fecha_inicio_planificado) ASC
-*/
+SELECT * FROM UTNIX.v_Desvio_Promedio_Tarea
+SELECT * FROM UTNIX.v_Tareas_x_Modelo
+SELECT * FROM UTNIX.v_Materiales_x_Taller
+SELECT * FROM UTNIX.v_Facturacion_x_Recorrido
+SELECT * FROM UTNIX.v_Promedio_x_Rango_etario
+--SELECT * FROM UTNIX.v_Ganancias_x_Camion
