@@ -123,8 +123,16 @@ IF OBJECT_ID('UTNIX.Obtener_Nombre_Ciudad') IS NOT NULL
 	DROP FUNCTION UTNIX.Obtener_Nombre_Ciudad
 GO
 
+IF OBJECT_ID('UTNIX.Obtener_Costo_Materiales_x_Cuatrimestre') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_Costo_Materiales_x_Cuatrimestre
+GO
+
 IF OBJECT_ID('UTNIX.Obtener_Costo_Materiales') IS NOT NULL
 	DROP FUNCTION UTNIX.Obtener_Costo_Materiales
+GO
+
+IF OBJECT_ID('UTNIX.Obtener_Costo_Mano_de_Obra_x_Cuatrimestre') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra_x_Cuatrimestre
 GO
 
 IF OBJECT_ID('UTNIX.Obtener_Costo_Mano_de_Obra') IS NOT NULL
@@ -610,11 +618,12 @@ BEGIN
 END
 GO
 
-CREATE FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra (@CAMION DECIMAL(18,0))
+CREATE FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra_x_Cuatrimestre (@ORDEN_TRABAJO DECIMAL(18,0))
 RETURNS DECIMAL(18,0)
 AS
 BEGIN
 	DECLARE @MANO_OBRA DECIMAL(18,0), @MANO_OBRA_TOTAL DECIMAL(18,0)
+	DECLARE @TAREA DECIMAL(18,0)
 	DECLARE @DIAS DECIMAL(18,0)
 	DECLARE @FECHA_INICIO DATETIME2(3), @FECHA_FIN DATETIME2(3)
 
@@ -623,13 +632,43 @@ BEGIN
 		, @FECHA_FIN = tarea_a_realizar_fecha_fin
 	FROM UTNIX.Tarea_a_Realizar
 		JOIN UTNIX.Mecanico ON mecanico_legajo_numero = tarea_a_realizar_mecanico_legajo
-		JOIN UTNIX.Orden_Trabajo ON orden_trabajo_codigo = tarea_a_realizar_orden_trabajo_codigo
-	WHERE orden_trabajo_camion_codigo = @CAMION
+	WHERE tarea_a_realizar_orden_trabajo_codigo = @ORDEN_TRABAJO
 	GROUP BY tarea_a_realizar_fecha_inicio, tarea_a_realizar_fecha_fin
 
 	SET @DIAS = DATEDIFF(DD, @FECHA_INICIO, @FECHA_FIN)
-	
+
 	SET @MANO_OBRA_TOTAL = @DIAS * 8 * @MANO_OBRA
+
+	RETURN @MANO_OBRA_TOTAL
+END
+GO
+
+CREATE FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra (@CAMION DECIMAL(18,0))
+RETURNS DECIMAL(18,0)
+AS
+BEGIN
+	DECLARE @MANO_OBRA_TOTAL DECIMAL(18,0) = 0
+	DECLARE @DIAS DECIMAL(18,0), @MANO_OBRA DECIMAL(18,0)
+	DECLARE @FECHA_INICIO DATETIME2(3), @FECHA_FIN DATETIME2(3)
+
+	DECLARE cursorMecanicos CURSOR FOR
+		SELECT mecanico_costo_hora, tarea_a_realizar_fecha_inicio, tarea_a_realizar_fecha_fin
+		FROM UTNIX.Orden_Trabajo
+			JOIN UTNIX.Tarea_a_Realizar ON orden_trabajo_codigo = tarea_a_realizar_orden_trabajo_codigo
+			JOIN UTNIX.Mecanico ON tarea_a_realizar_mecanico_legajo = mecanico_legajo_numero
+		WHERE orden_trabajo_camion_codigo = @CAMION
+		
+	OPEN cursorMecanicos 
+    FETCH NEXT FROM cursorMecanicos INTO @MANO_OBRA, @FECHA_INICIO, @FECHA_FIN
+    WHILE @@FETCH_STATUS = 0
+        BEGIN
+			SET @DIAS = DATEDIFF(DD, @FECHA_INICIO, @FECHA_FIN)
+			SET @MANO_OBRA_TOTAL = @MANO_OBRA_TOTAL + @DIAS * 8 * @MANO_OBRA
+
+			FETCH NEXT FROM cursorMecanicos INTO @MANO_OBRA,@FECHA_INICIO,@FECHA_FIN
+        END
+    CLOSE cursorMecanicos
+    DEALLOCATE cursorMecanicos
 
 	RETURN @MANO_OBRA_TOTAL
 END
@@ -639,21 +678,58 @@ CREATE FUNCTION UTNIX.Obtener_Costo_Chofer (@CAMION DECIMAL(18,0))
 RETURNS DECIMAL(18,0)
 AS
 BEGIN
-	DECLARE @COSTO_TOTAL DECIMAL(18,0), @COSTO DECIMAL(18,0)
+	DECLARE @COSTO_TOTAL DECIMAL(18,0) = 0
 	DECLARE @FECHA_INICIO DATETIME2(3), @FECHA_FIN DATETIME2(3)
-	DECLARE @HORAS DECIMAL(18,0)
+	DECLARE @HORAS DECIMAL(18,0), @COSTO DECIMAL(18,0)
 
-	SELECT @COSTO = ISNULL(SUM(chofer_costo_hora), 0)
-		, @FECHA_INICIO = viaje_fecha_inicio
-		, @FECHA_FIN = viaje_fecha_fin
-	FROM UTNIX.Viaje
-		JOIN UTNIX.Chofer ON chofer_numero_legajo = viaje_chofer_legajo
-	WHERE viaje_camion_codigo = @CAMION
-	GROUP BY chofer_costo_hora, viaje_fecha_inicio, viaje_fecha_fin
+	DECLARE cursorChoferes CURSOR FOR
+        SELECT bi_chofer_costo_hora, bi_viaje_fecha_inicio, bi_viaje_fecha_fin    
+        FROM UTNIX.BI_Chofer
+			JOIN UTNIX.BI_Viaje ON bi_viaje_chofer_legajo = bi_chofer_numero_legajo
+        WHERE bi_viaje_camion_codigo = @CAMION
 
-	SET @HORAS = DATEDIFF(HH, @FECHA_INICIO, @FECHA_FIN)
+    OPEN cursorChoferes 
+    FETCH NEXT FROM cursorChoferes INTO @COSTO,@FECHA_INICIO,@FECHA_FIN
+    WHILE @@FETCH_STATUS = 0
+        BEGIN
+            SET @HORAS = DATEDIFF(HH, @FECHA_INICIO, @FECHA_FIN)    
+            SET @COSTO_TOTAL = @COSTO_TOTAL+@COSTO * @HORAS 
+            FETCH NEXT FROM cursorChoferes INTO @COSTO,@FECHA_INICIO,@FECHA_FIN
+        END
+    CLOSE cursorChoferes
+    DEALLOCATE cursorChoferes
 
-	SET @COSTO_TOTAL = @COSTO * @HORAS 
+	RETURN @COSTO_TOTAL
+END
+GO
+
+CREATE FUNCTION UTNIX.Obtener_Costo_Materiales_x_Cuatrimestre (@ORDEN_TRABAJO DECIMAL(18,0))
+RETURNS DECIMAL(18,0)
+AS
+BEGIN
+	DECLARE @COSTO_TOTAL DECIMAL(18,0) = 0
+	DECLARE @TAREA DECIMAL(18,0)
+
+	DECLARE cursorCosto CURSOR FOR
+		SELECT tarea_a_realizar_tarea_codigo FROM UTNIX.Tarea_a_Realizar
+		WHERE tarea_a_realizar_orden_trabajo_codigo = @ORDEN_TRABAJO
+
+	OPEN cursorCosto
+	FETCH NEXT FROM cursorCosto INTO @TAREA
+	WHILE @@FETCH_STATUS = 0
+		BEGIN
+
+			SET @COSTO_TOTAL = @COSTO_TOTAL + (SELECT SUM(MAT.material_precio) 
+											   FROM UTNIX.Tarea TAR
+													JOIN UTNIX.Material_x_Tarea MXT ON MXT.tarea_codigo = TAR.tarea_codigo
+													JOIN UTNIX.Material MAT ON MAT.material_codigo = MXT.material_codigo
+											   WHERE TAR.tarea_codigo = @TAREA
+											   GROUP BY TAR.tarea_codigo)
+
+			FETCH NEXT FROM cursorCosto INTO @TAREA
+		END
+	CLOSE cursorCosto
+	DEALLOCATE cursorCosto
 
 	RETURN @COSTO_TOTAL
 END
@@ -811,12 +887,16 @@ GO
 
 /*• Ganancia por camión (Ingresos – Costo de viaje – Costo de mantenimiento)
 	- Ingresos: en función de la cantidad y tipo de paquetes que transporta el camión y el recorrido.
-	- Costo de viaje: costo del chofer + el costo de combustible. Tomar precio por lt de combustible $100.-	- Costo de mantenimiento: costo de materiales + costo de mano de obra.*/
-/*
+	- Costo de viaje: costo del chofer + el costo de combustible. Tomar precio por lt de combustible $100.-
+	- Costo de mantenimiento: costo de materiales + costo de mano de obra.*/
+
 CREATE VIEW UTNIX.v_Ganancias_x_Camion AS
-	SELECT 
-	FROM UTNIX.BI_Hechos_Ganancias
-GO*/
+    SELECT 
+		  HG.bi_camion_codigo as [Camión Código]
+		, HG.ganancias as [Ganancias]
+    FROM UTNIX.BI_Hechos_Ganancias HG
+	GROUP BY HG.bi_camion_codigo, HG.ganancias
+GO
 
 
 /*---------------------------------------------------------------------------------------------------------------------------
@@ -1007,7 +1087,7 @@ BEGIN
 	SELECT DISTINCT C.camion_codigo
 		, T.taller_codigo
 		, UTNIX.Obtener_ID_Tiempo(OT.orden_trabajo_fecha)
-		, SUM(UTNIX.Obtener_Costo_Materiales(C.camion_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra(C.camion_codigo))
+		, SUM(UTNIX.Obtener_Costo_Materiales_x_Cuatrimestre(OT.orden_trabajo_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra_x_Cuatrimestre(OT.orden_trabajo_codigo))
 		, (SELECT TOP 1 SUM(tarea_tiempo_estimado)
 		   FROM UTNIX.Tarea_a_Realizar
 			   JOIN UTNIX.Orden_Trabajo ON orden_trabajo_codigo = tarea_a_realizar_orden_trabajo_codigo
@@ -1095,23 +1175,47 @@ BEGIN
 END
 GO
 
-
 CREATE PROCEDURE UTNIX.BI_Migrar_Hechos_Ganancias
 AS
 BEGIN
-	INSERT INTO UTNIX.BI_Hechos_Ganancias (bi_camion_codigo, ganancias)
-	SELECT C.camion_codigo
-		, (SELECT SUM(paquete_cantidad * tipo_paquete_precio)
-			FROM UTNIX.Viaje
-				JOIN UTNIX.Paquete ON paquete_viaje_codigo = viaje_codigo
-				JOIN UTNIX.Tipo_Paquete ON tipo_paquete_codigo = paquete_tipo_codigo
-			WHERE viaje_camion_codigo = C.camion_codigo)
-		, SUM(UTNIX.Obtener_Costo_Chofer(C.camion_codigo) + V.viaje_consumo_combustible * 100)
-		, SUM(UTNIX.Obtener_Costo_Materiales(C.camion_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra(C.camion_codigo))
-	FROM UTNIX.Camion C
-		JOIN UTNIX.Viaje V ON V.viaje_camion_codigo = C.camion_codigo
-	GROUP BY C.camion_codigo
-	ORDER BY C.camion_codigo
+   DECLARE @COD_CAMION NVARCHAR(255), @GANANCIA_POR_CAMION DECIMAL(18,0), @GANANCIA_PAQUETES DECIMAL(18,0), @COSTO_VIAJE DECIMAL(18,0), @COSTO_MANTENIMIENTO DECIMAL(18,0)
+
+   DECLARE cursorGanancias CURSOR FOR  
+        SELECT C.camion_codigo
+            , (SELECT SUM(paquete_cantidad * tipo_paquete_precio)
+                FROM UTNIX.Viaje
+                    JOIN UTNIX.Paquete ON paquete_viaje_codigo = viaje_codigo
+                    JOIN UTNIX.Tipo_Paquete ON tipo_paquete_codigo = paquete_tipo_codigo
+                WHERE viaje_camion_codigo = C.camion_codigo)
+            , ((SELECT UTNIX.Obtener_Costo_Chofer(CAM.camion_codigo)
+                FROM UTNIX.Camion CAM
+                WHERE CAM.camion_codigo = C.camion_codigo
+                GROUP BY CAM.camion_codigo) 
+                +
+                (SELECT SUM(viaje_consumo_combustible * 100)
+                FROM UTNIX.Viaje vi
+                WHERE vi.viaje_camion_codigo = C.camion_codigo))
+			,  (SELECT (UTNIX.Obtener_Costo_Materiales(CA.camion_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra(CA.camion_codigo))
+				FROM UTNIX.Camion CA
+				WHERE CA.camion_codigo = C.camion_codigo)   
+        FROM UTNIX.Camion C
+            JOIN UTNIX.Viaje V ON V.viaje_camion_codigo = C.camion_codigo
+            GROUP BY C.camion_codigo
+            ORDER BY C.camion_codigo
+
+    OPEN cursorGanancias 
+    FETCH NEXT FROM cursorGanancias INTO @COD_CAMION, @GANANCIA_PAQUETES, @COSTO_VIAJE, @COSTO_MANTENIMIENTO
+    WHILE @@FETCH_STATUS = 0
+        BEGIN
+
+			INSERT INTO UTNIX.BI_Hechos_Ganancias (bi_camion_codigo, ganancias)
+			VALUES(@COD_CAMION, @GANANCIA_PAQUETES - @COSTO_VIAJE - @COSTO_MANTENIMIENTO)
+
+			FETCH NEXT FROM cursorGanancias INTO @COD_CAMION, @GANANCIA_PAQUETES, @COSTO_VIAJE, @COSTO_MANTENIMIENTO
+        END
+    CLOSE cursorGanancias
+    DEALLOCATE cursorGanancias
+
 END
 GO
 
@@ -1143,7 +1247,7 @@ EXEC UTNIX.BI_Migrar_Hechos_Mantenimiento_Camion
 EXEC UTNIX.BI_Migrar_Hechos_Facturaciones
 EXEC UTNIX.BI_Migrar_Hechos_Taller_x_Tareas
 EXEC UTNIX.BI_Migrar_Hechos_Costo_Promedio_Etario
---EXEC UTNIX.BI_Migrar_Hechos_Ganancias
+EXEC UTNIX.BI_Migrar_Hechos_Ganancias
 GO
 
 SELECT * FROM UTNIX.v_Maximo_Tiempo_Fuera_de_Servicio
@@ -1153,4 +1257,4 @@ SELECT * FROM UTNIX.v_Tareas_x_Modelo
 SELECT * FROM UTNIX.v_Materiales_x_Taller
 SELECT * FROM UTNIX.v_Facturacion_x_Recorrido
 SELECT * FROM UTNIX.v_Promedio_x_Rango_etario
---SELECT * FROM UTNIX.v_Ganancias_x_Camion
+SELECT * FROM UTNIX.v_Ganancias_x_Camion
