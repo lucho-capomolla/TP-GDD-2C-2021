@@ -131,12 +131,12 @@ IF OBJECT_ID('UTNIX.Obtener_Costo_Materiales_x_Camion') IS NOT NULL
 	DROP FUNCTION UTNIX.Obtener_Costo_Materiales_x_Camion
 GO
 
-IF OBJECT_ID('UTNIX.Obtener_Costo_Mano_De_Obra_De_OT') IS NOT NULL
-	DROP FUNCTION UTNIX.Obtener_Costo_Mano_De_Obra_De_OT
+IF OBJECT_ID('UTNIX.Obtener_Costo_Mano_de_Obra_por_camion_De_OT') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra_por_camion_De_OT
 GO
 
-IF OBJECT_ID('UTNIX.Obtener_Costo_Mano_de_Obra') IS NOT NULL
-	DROP FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra
+IF OBJECT_ID('UTNIX.Obtener_Costo_Mano_de_Obra_por_camion') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra_por_camion
 GO
 
 IF OBJECT_ID('UTNIX.Obtener_Maximo_Tiempo_Fuera_Servicio') IS NOT NULL
@@ -620,7 +620,7 @@ GO
 
 
 
-CREATE FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra (@CAMION DECIMAL(18,0))
+CREATE FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra_por_camion (@CAMION DECIMAL(18,0))
 RETURNS DECIMAL(18,0)
 AS
 BEGIN
@@ -680,7 +680,7 @@ BEGIN
 END
 
 GO
-CREATE FUNCTION UTNIX.Obtener_Costo_Mano_De_Obra_De_OT (@ORDEN_TRABAJO DECIMAL(18,0))
+CREATE FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra_por_camion_De_OT (@ORDEN_TRABAJO DECIMAL(18,0))
 RETURNS DECIMAL(18,0)
 AS
 BEGIN
@@ -1090,7 +1090,7 @@ BEGIN
 	SELECT DISTINCT C.camion_codigo
 		, T.taller_codigo
 		, UTNIX.Obtener_ID_Tiempo(OT.orden_trabajo_fecha)
-		, SUM(UTNIX.Obtener_Costo_Materiales_x_OT(OT.orden_trabajo_codigo) + UTNIX.Obtener_Costo_Mano_De_Obra_De_OT(OT.orden_trabajo_codigo))
+		, SUM(UTNIX.Obtener_Costo_Materiales_x_OT(OT.orden_trabajo_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra_por_camion_De_OT(OT.orden_trabajo_codigo))
 		, (SELECT TOP 1 SUM(tarea_tiempo_estimado)
 		   FROM UTNIX.Tarea_a_Realizar
 			   JOIN UTNIX.Orden_Trabajo ON orden_trabajo_codigo = tarea_a_realizar_orden_trabajo_codigo
@@ -1198,7 +1198,7 @@ BEGIN
                 (SELECT SUM(viaje_consumo_combustible * 100)
                 FROM UTNIX.Viaje vi
                 WHERE vi.viaje_camion_codigo = C.camion_codigo))
-			,  (SELECT (UTNIX.Obtener_Costo_Materiales_x_Camion(CA.camion_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra(CA.camion_codigo))
+			,  (SELECT (UTNIX.Obtener_Costo_Materiales_x_Camion(CA.camion_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra_por_camion(CA.camion_codigo))
 				FROM UTNIX.Camion CA
 				WHERE CA.camion_codigo = C.camion_codigo)   
         FROM UTNIX.Camion C
