@@ -123,16 +123,16 @@ IF OBJECT_ID('UTNIX.Obtener_Nombre_Ciudad') IS NOT NULL
 	DROP FUNCTION UTNIX.Obtener_Nombre_Ciudad
 GO
 
-IF OBJECT_ID('UTNIX.Obtener_Costo_Materiales_x_Cuatrimestre') IS NOT NULL
-	DROP FUNCTION UTNIX.Obtener_Costo_Materiales_x_Cuatrimestre
+IF OBJECT_ID('UTNIX.Obtener_Costo_Materiales_x_OT') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_Costo_Materiales_x_OT
 GO
 
-IF OBJECT_ID('UTNIX.Obtener_Costo_Materiales') IS NOT NULL
-	DROP FUNCTION UTNIX.Obtener_Costo_Materiales
+IF OBJECT_ID('UTNIX.Obtener_Costo_Materiales_x_Camion') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_Costo_Materiales_x_Camion
 GO
 
-IF OBJECT_ID('UTNIX.Obtener_Costo_Mano_de_Obra_x_Cuatrimestre') IS NOT NULL
-	DROP FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra_x_Cuatrimestre
+IF OBJECT_ID('UTNIX.Obtener_Costo_Mano_De_Obra_De_OT') IS NOT NULL
+	DROP FUNCTION UTNIX.Obtener_Costo_Mano_De_Obra_De_OT
 GO
 
 IF OBJECT_ID('UTNIX.Obtener_Costo_Mano_de_Obra') IS NOT NULL
@@ -618,30 +618,7 @@ BEGIN
 END
 GO
 
-CREATE FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra_x_Cuatrimestre (@ORDEN_TRABAJO DECIMAL(18,0))
-RETURNS DECIMAL(18,0)
-AS
-BEGIN
-	DECLARE @MANO_OBRA DECIMAL(18,0), @MANO_OBRA_TOTAL DECIMAL(18,0)
-	DECLARE @TAREA DECIMAL(18,0)
-	DECLARE @DIAS DECIMAL(18,0)
-	DECLARE @FECHA_INICIO DATETIME2(3), @FECHA_FIN DATETIME2(3)
 
-	SELECT @MANO_OBRA = ISNULL(SUM(mecanico_costo_hora), 0)
-		, @FECHA_INICIO = tarea_a_realizar_fecha_inicio
-		, @FECHA_FIN = tarea_a_realizar_fecha_fin
-	FROM UTNIX.Tarea_a_Realizar
-		JOIN UTNIX.Mecanico ON mecanico_legajo_numero = tarea_a_realizar_mecanico_legajo
-	WHERE tarea_a_realizar_orden_trabajo_codigo = @ORDEN_TRABAJO
-	GROUP BY tarea_a_realizar_fecha_inicio, tarea_a_realizar_fecha_fin
-
-	SET @DIAS = DATEDIFF(DD, @FECHA_INICIO, @FECHA_FIN)
-
-	SET @MANO_OBRA_TOTAL = @DIAS * 8 * @MANO_OBRA
-
-	RETURN @MANO_OBRA_TOTAL
-END
-GO
 
 CREATE FUNCTION UTNIX.Obtener_Costo_Mano_de_Obra (@CAMION DECIMAL(18,0))
 RETURNS DECIMAL(18,0)
@@ -701,9 +678,35 @@ BEGIN
 
 	RETURN @COSTO_TOTAL
 END
+
+GO
+CREATE FUNCTION UTNIX.Obtener_Costo_Mano_De_Obra_De_OT (@ORDEN_TRABAJO DECIMAL(18,0))
+RETURNS DECIMAL(18,0)
+AS
+BEGIN
+	DECLARE @MANO_OBRA DECIMAL(18,0), @MANO_OBRA_TOTAL DECIMAL(18,0)
+	DECLARE @TAREA DECIMAL(18,0)
+	DECLARE @DIAS DECIMAL(18,0)
+	DECLARE @FECHA_INICIO DATETIME2(3), @FECHA_FIN DATETIME2(3)
+
+	SELECT @MANO_OBRA = ISNULL(SUM(mecanico_costo_hora), 0)
+		, @FECHA_INICIO = tarea_a_realizar_fecha_inicio
+		, @FECHA_FIN = tarea_a_realizar_fecha_fin
+	FROM UTNIX.Tarea_a_Realizar
+		JOIN UTNIX.Mecanico ON mecanico_legajo_numero = tarea_a_realizar_mecanico_legajo
+	WHERE tarea_a_realizar_orden_trabajo_codigo = @ORDEN_TRABAJO
+	GROUP BY tarea_a_realizar_fecha_inicio, tarea_a_realizar_fecha_fin
+
+	SET @DIAS = DATEDIFF(DD, @FECHA_INICIO, @FECHA_FIN)
+
+	SET @MANO_OBRA_TOTAL = @DIAS * 8 * @MANO_OBRA
+
+	RETURN @MANO_OBRA_TOTAL
+END
+
 GO
 
-CREATE FUNCTION UTNIX.Obtener_Costo_Materiales_x_Cuatrimestre (@ORDEN_TRABAJO DECIMAL(18,0))
+CREATE FUNCTION UTNIX.Obtener_Costo_Materiales_x_OT (@ORDEN_TRABAJO DECIMAL(18,0))
 RETURNS DECIMAL(18,0)
 AS
 BEGIN
@@ -735,7 +738,7 @@ BEGIN
 END
 GO
 
-CREATE FUNCTION UTNIX.Obtener_Costo_Materiales (@CAMION DECIMAL(18,0))
+CREATE FUNCTION UTNIX.Obtener_Costo_Materiales_x_Camion (@CAMION DECIMAL(18,0))
 RETURNS DECIMAL(18,0)
 AS
 BEGIN
@@ -1087,7 +1090,7 @@ BEGIN
 	SELECT DISTINCT C.camion_codigo
 		, T.taller_codigo
 		, UTNIX.Obtener_ID_Tiempo(OT.orden_trabajo_fecha)
-		, SUM(UTNIX.Obtener_Costo_Materiales_x_Cuatrimestre(OT.orden_trabajo_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra_x_Cuatrimestre(OT.orden_trabajo_codigo))
+		, SUM(UTNIX.Obtener_Costo_Materiales_x_OT(OT.orden_trabajo_codigo) + UTNIX.Obtener_Costo_Mano_De_Obra_De_OT(OT.orden_trabajo_codigo))
 		, (SELECT TOP 1 SUM(tarea_tiempo_estimado)
 		   FROM UTNIX.Tarea_a_Realizar
 			   JOIN UTNIX.Orden_Trabajo ON orden_trabajo_codigo = tarea_a_realizar_orden_trabajo_codigo
@@ -1195,7 +1198,7 @@ BEGIN
                 (SELECT SUM(viaje_consumo_combustible * 100)
                 FROM UTNIX.Viaje vi
                 WHERE vi.viaje_camion_codigo = C.camion_codigo))
-			,  (SELECT (UTNIX.Obtener_Costo_Materiales(CA.camion_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra(CA.camion_codigo))
+			,  (SELECT (UTNIX.Obtener_Costo_Materiales_x_Camion(CA.camion_codigo) + UTNIX.Obtener_Costo_Mano_de_Obra(CA.camion_codigo))
 				FROM UTNIX.Camion CA
 				WHERE CA.camion_codigo = C.camion_codigo)   
         FROM UTNIX.Camion C
@@ -1248,9 +1251,7 @@ EXEC UTNIX.BI_Migrar_Hechos_Facturaciones
 EXEC UTNIX.BI_Migrar_Hechos_Taller_x_Tareas
 EXEC UTNIX.BI_Migrar_Hechos_Costo_Promedio_Etario
 EXEC UTNIX.BI_Migrar_Hechos_Ganancias
-GO
 
-SELECT * FROM UTNIX.v_Maximo_Tiempo_Fuera_de_Servicio
 SELECT * FROM UTNIX.v_Mantenimiento_x_Camion
 SELECT * FROM UTNIX.v_Desvio_Promedio_Tarea
 SELECT * FROM UTNIX.v_Tareas_x_Modelo
