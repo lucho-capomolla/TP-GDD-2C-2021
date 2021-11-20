@@ -1246,6 +1246,11 @@ EXEC UTNIX.BI_Migrar_Hechos_Taller_x_Tareas
 EXEC UTNIX.BI_Migrar_Hechos_Costo_Promedio_Etario
 EXEC UTNIX.BI_Migrar_Hechos_Ganancias
 
+
+/*---------------------------------------------------------------------------------------------------------------------------
+							EJECUCIÓN DE LAS VISTAS
+---------------------------------------------------------------------------------------------------------------------------*/
+
 SELECT * FROM UTNIX.v_Mantenimiento_x_Camion
 SELECT * FROM UTNIX.v_Desvio_Promedio_Tarea
 SELECT * FROM UTNIX.v_Tareas_x_Modelo
